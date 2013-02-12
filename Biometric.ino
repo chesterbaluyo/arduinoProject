@@ -39,15 +39,7 @@ void send_msg(char *number, char *msg)
   delay(100);
   delay(100);
   sendGSM(msg1);
-  delay(100);
-  sendGSM("AT+CMGL='ALL'\r\n");
-  delay(100);
-  i=0;
-  readSerialString(msg1);
-  for(i=0;i<=160;i++){
-    Serial.print(msg1[i]);
-  }
-  
+  delay(90);  
 }    
 
 void sendGSM(char *string){
@@ -98,6 +90,16 @@ void readSerialString (char *strArray) {
   while(Serial.available()) {
     strArray[i] = Serial.read();
     i++;
+  }
+}
+
+void readMessages() {
+  sendGSM("AT+CMGL='ALL'\r\n");
+  delay(100);
+  i=0;
+  readSerialString(msg1);
+  for(i=0;i<=160;i++){
+    Serial.print(msg1[i]);
   }
 }
 
