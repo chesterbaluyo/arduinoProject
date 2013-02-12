@@ -16,10 +16,9 @@ int sig;
 void setup() {
   Serial.begin(38400);
     
-  
+  initGSM();
   mySerial.begin(115200);  
   readFingerPrint();
-
 }
 
 void loop() {
@@ -148,7 +147,6 @@ void getResponse() {
         responseValue = responsePacket[30];
         if(responseValue == 20){
           Serial.println("Finger Match. Sending Text....");
-            initGSM();
           send_msg("09991165260", "Engine Start");
         }          
     
