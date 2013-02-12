@@ -96,9 +96,10 @@ void readSerialString (char *strArray) {
 
 void readMessages() {
   char *stat = '\0';
-  
+  char msg1[160] = {'\0'};
+  sprintf(msg1,"AT+CMGL=\"%s\"\r\n","ALL");  
   while(!stat){
-    sendGSM("AT+CMGR=1\r\n");
+    sendGSM(msg1);
     delay(100);
     readSerialString(Rx_data);
     Serial.println("---------");
