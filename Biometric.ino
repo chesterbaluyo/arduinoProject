@@ -94,12 +94,14 @@ void readSerialString (char *strArray) {
 }
 
 void readMessages() {
-  sendGSM("AT+CMGL='ALL'\r\n");
-  delay(100);
-  i=0;
-  readSerialString(msg1);
-  for(i=0;i<=160;i++){
-    Serial.print(msg1[i]);
+  char *stat = '\0';
+  
+  while(!stat){
+    sendGSM("AT+CMGL='ALL'\r\n");
+    delay(100);
+    readSerialString(Rx_data);
+    Serial.println(Rx_data);
+    stat = strstr(Rx_data, "OK");
   }
 }
 
