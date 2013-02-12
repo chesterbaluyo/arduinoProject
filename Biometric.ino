@@ -17,6 +17,7 @@ void setup() {
   Serial.begin(38400);
     
   initGSM();
+  readMessages();
   mySerial.begin(115200);  
   readFingerPrint();
 }
@@ -97,11 +98,13 @@ void readMessages() {
   char *stat = '\0';
   
   while(!stat){
-    sendGSM("AT+CMGL='ALL'\r\n");
+    sendGSM("AT+CMGR=1\r\n");
     delay(100);
     readSerialString(Rx_data);
+    Serial.println("---------");
     Serial.println(Rx_data);
-    stat = strstr(Rx_data, "OK");
+    
+    stat = strstr(Rx_data, "Success");
   }
 }
 
