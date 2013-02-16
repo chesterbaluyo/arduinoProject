@@ -60,7 +60,6 @@ void send_cmd(char *at_cmd, char clr){
     sendGSM(at_cmd);
     delay(90);
     readSerialString(Rx_data);
-    
     stat = strstr(Rx_data, "OK");
   }
   if (clr){
@@ -101,11 +100,11 @@ void readMessages() {
   while(!stat){
     sendGSM(msg1);
     delay(100);
-    readSerialString(Rx_data);
+    readSerialString(msg);
     Serial.println("---------");
-    Serial.println(Rx_data);
+    Serial.println(msg);
     
-    stat = strstr(Rx_data, "Success");
+    stat = strstr(msg, "Success");
   }
 }
 
