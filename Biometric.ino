@@ -11,6 +11,7 @@ char Rx_data[50];
 unsigned char Rx_index = 0;
 int i = 0;
 char msg[160];
+char readMsg[500];
 int sig;
 
 void setup() {
@@ -96,15 +97,15 @@ void readSerialString (char *strArray) {
 void readMessages() {
   char *stat = '\0';
   char msg1[160] = {'\0'};
-  sprintf(msg1,"AT+CMGL=\"%s\"\r\n","ALL");  
+  sprintf(msg1,"AT+CMGL=\"%s\"\r\n","REC UNREAD");  
   while(!stat){
     sendGSM(msg1);
     delay(100);
-    readSerialString(msg);
+    readSerialString(readMsg);
     Serial.println("---------");
-    Serial.println(msg);
+    Serial.println(readMsg);
     
-    stat = strstr(msg, "Success");
+    stat = strstr(readMsg, "Success");
   }
 }
 
