@@ -128,7 +128,7 @@ void deleteAllSMS() {
   char at_cmd[50] = {'\0'};  
   for(index=0;index<=10;index++)
   {
-    sprintf(at_cmd,"AT+CMGD=\"%i\"\r\n",index);
+    sprintf(at_cmd,"AT+CMGD=%i\r\n",index);
     sendGSM(at_cmd);
     delay(100);
     readSerialString(readMsg);
