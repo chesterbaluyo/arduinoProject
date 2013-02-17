@@ -98,47 +98,50 @@ void readSerialString (char *strArray) {
 void readMessages() {
   char *stat = '\0';
   char msg1[160] = {'\0'};
-  char *p_char;
-  char *p_char1;
-  char number[20];
   sprintf(msg1,"AT+CMGL=\"%s\"\r\n","ALL");  
   while(!stat){
     sendGSM(msg1);
     delay(100);
     readSerialString(readMsg);
-    Serial.println("---------");
-    Serial.println(readMsg);
-    
     stat = strstr(readMsg, "Success");
   }
-  p_char = strchr(readMsg,',');
-  p_char1 = p_char+15;
-  Serial.println((char *)(p_char));
-  Serial.println((char *)(p_char1));
-  p_char = strchr((char *)(p_char1),'"');
-  strcpy(number,(char *)(p_char1));
-  Serial.print("this is the: ");
-  Serial.println(number);
-  clearString(readMsg);
-  readSerialString(readMsg);
-  Serial.println(readMsg);
   clearString(readMsg);  
-  delay(5000);
+  delay(10000);
   deleteAllSMS();
 }
 
 void deleteAllSMS() {
   int index;
+  char *stat = '\0';  
   char at_cmd[50] = {'\0'};
-  for(index=0;index<=16;index++)
+  char *p_char;
+  char *p_char1;
+  char number[20]={'\0'};  
+  for(index=1;index<=20;index++)
   {
+    sprintf(at_cmd,"AT+CMGR=%i\r\n",index);
+    while(!stat){
+      sendGSM(at_cmd);
+      delay(100);
+      readSerialString(readMsg);
+      stat = strstr(readMsg, "Success");
+    }
+    p_char = strchr(readMsg,',');
+    p_char1 = p_char+13;
+    p_char = strchr((char *)(p_char1),'"');
+    strcpy(number,(char *)(p_char1));
+    Serial.print("User no.: ");
+    Serial.println(number);
+    if(strstr(number,"+639999969515")){
+        Serial.println("stop engine");
+        digitalWrite(led,LOW);
+      }
+    delay(2000);      
+    clearString(readMsg);    
     clearString(Rx_data);    
     sprintf(at_cmd,"AT+CMGD=%i\r\n",index);
     sendGSM(at_cmd);
-    delay(100);
-    readSerialString(Rx_data);
-    Serial.println("---------");
-    Serial.println(Rx_data);    
+    delay(1000);    
   }
       
 }
