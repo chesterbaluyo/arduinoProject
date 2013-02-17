@@ -15,11 +15,13 @@ char msg[160];
 char readMsg[500];
 int sig;
 int led=13;
+int led2=12;
 
 void setup() {
   pinMode(led,OUTPUT);
+  pinMode(led2,OUTPUT);
   Serial.begin(38400);
-    
+  digitalWrite(led2,HIGH); 
   initGSM();
   mySerial.begin(115200);  
   readFingerPrint();
