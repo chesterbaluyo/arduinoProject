@@ -12,7 +12,7 @@ char Rx_data[50];
 unsigned char Rx_index = 0;
 int i = 0;
 char msg[160];
-char readMsg[200];
+char readMsg[500];
 int sig;
 int led=13;
 
