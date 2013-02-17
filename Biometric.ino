@@ -97,6 +97,9 @@ void readSerialString (char *strArray) {
 void readMessages() {
   char *stat = '\0';
   char msg1[160] = {'\0'};
+  char *p_char;
+  char *p_char1;
+  char number[20];
   sprintf(msg1,"AT+CMGL=\"%s\"\r\n","ALL");  
   while(!stat){
     sendGSM(msg1);
