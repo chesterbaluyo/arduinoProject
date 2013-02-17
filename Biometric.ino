@@ -103,12 +103,10 @@ void readMessages() {
   char *stat = '\0';
   char msg1[160] = {'\0'};
   sprintf(msg1,"AT+CMGL=\"%s\"\r\n","ALL");  
-  while(!stat){
     sendGSM(msg1);
     delay(100);
     readSerialString(readMsg);
-    stat = strstr(readMsg, "Success");
-  }
+  Serial.println(readMsg);
   clearString(readMsg);  
   delay(10000);
   deleteAllSMS();
@@ -116,6 +114,7 @@ void readMessages() {
 
 void deleteAllSMS() {
   int index;
+  int ctr;
   char *stat = '\0';  
   char at_cmd[50] = {'\0'};
   char *p_char;
@@ -123,31 +122,28 @@ void deleteAllSMS() {
   char number[20]={'\0'};  
   for(index=1;index<=20;index++)
   {
-    sprintf(at_cmd,"AT+CMGR=%i\r\n",index);
-    while(!stat){
+      sprintf(at_cmd,"AT+CMGR=%i\r\n",index);
+        sendGSM(at_cmd);
+        delay(100);
+        readSerialString(readMsg);
+      p_char = strchr(readMsg,',');
+      p_char1 = p_char+2;
+      p_char = strchr((char *)(p_char1),'"');
+      strcpy(number,(char *)(p_char1));
+      Serial.print("User no.: ");
+      Serial.println(number);
+      if(strstr(number,"+639991165260")){
+          Serial.println("stop engine");
+          digitalWrite(led,LOW);
+        }  
+      delay(1000);      
+      clearString(readMsg);    
+      clearString(Rx_data);    
+      sprintf(at_cmd,"AT+CMGD=%i\r\n",index);
       sendGSM(at_cmd);
-      delay(100);
-      readSerialString(readMsg);
-      stat = strstr(readMsg, "Success");
-    }
-    p_char = strchr(readMsg,',');
-    p_char1 = p_char+13;
-    p_char = strchr((char *)(p_char1),'"');
-    strcpy(number,(char *)(p_char1));
-    Serial.print("User no.: ");
-    Serial.println(number);
-    if(strstr(number,"+639999969515")){
-        Serial.println("stop engine");
-        digitalWrite(led,LOW);
-      }
-    delay(2000);      
-    clearString(readMsg);    
-    clearString(Rx_data);    
-    sprintf(at_cmd,"AT+CMGD=%i\r\n",index);
-    sendGSM(at_cmd);
-    delay(1000);    
-  }
-      
+      delay(1000);
+        
+  }   
 }
 
 void readFingerPrint() {
