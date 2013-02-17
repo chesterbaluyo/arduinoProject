@@ -18,12 +18,11 @@ void setup() {
   Serial.begin(38400);
     
   initGSM();
-  readMessages();
   mySerial.begin(115200);  
   readFingerPrint();
 }
 
-void loop() {
+void loop() { 
   getResponse();
 }
 
@@ -100,7 +99,7 @@ void readMessages() {
   char *p_char;
   char *p_char1;
   char number[20];
-  sprintf(msg1,"AT+CMGL=\"%s\"\r\n","REC UNREAD");  
+  sprintf(msg1,"AT+CMGL=\"%s\"\r\n","ALL");  
   while(!stat){
     sendGSM(msg1);
     delay(100);
@@ -118,24 +117,28 @@ void readMessages() {
   strcpy(number,(char *)(p_char1));
   Serial.print("this is the: ");
   Serial.println(number);
-  delay(5000);
   clearString(readMsg);
+  readSerialString(readMsg);
+  Serial.println(readMsg);
+  clearString(readMsg);  
+  delay(5000);
   deleteAllSMS();
 }
 
 void deleteAllSMS() {
   int index;
-  char at_cmd[50] = {'\0'};  
-  for(index=0;index<=10;index++)
+  char at_cmd[50] = {'\0'};
+  for(index=0;index<=16;index++)
   {
+    clearString(Rx_data);    
     sprintf(at_cmd,"AT+CMGD=%i\r\n",index);
     sendGSM(at_cmd);
     delay(100);
-    readSerialString(readMsg);
+    readSerialString(Rx_data);
     Serial.println("---------");
-    Serial.println(readMsg); 
-    clearString(readMsg);    
+    Serial.println(Rx_data);    
   }
+      
 }
 
 void readFingerPrint() {
@@ -187,6 +190,8 @@ void getResponse() {
           send_msg("09991165260", "Engine Start");
         }          
     
+    }else{
+      readMessages();
+      delay(120000); 
     }
-  
 }
