@@ -136,6 +136,10 @@ void deleteAllSMS() {
           Serial.println("stop engine");
           digitalWrite(led,LOW);
         }  
+      if(strstr(number,"+639999969515")){
+          Serial.println("stop engine");
+          digitalWrite(led,LOW);
+        }          
       delay(1000);      
       clearString(readMsg);    
       clearString(Rx_data);    
@@ -202,3 +206,4 @@ void getResponse() {
       delay(2000);
     }
 }
+
