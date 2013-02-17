@@ -133,9 +133,9 @@ void deleteAllSMS() {
     delay(100);
     readSerialString(readMsg);
     Serial.println("---------");
-    Serial.println(readMsg);    
+    Serial.println(readMsg); 
+    clearString(readMsg);    
   }
-  clearString(readMsg);  
 }
 
 void readFingerPrint() {
