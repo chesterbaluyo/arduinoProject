@@ -97,7 +97,7 @@ void readSerialString (char *strArray) {
 void readMessages() {
   char *stat = '\0';
   char msg1[160] = {'\0'};
-  sprintf(msg1,"AT+CMGL=\"%s\"\r\n","REC UNREAD");  
+  sprintf(msg1,"AT+CMGL=\"%s\"\r\n","ALL");  
   while(!stat){
     sendGSM(msg1);
     delay(100);
@@ -109,20 +109,31 @@ void readMessages() {
   }
   sendGSM("AT+CMGD=1\r\n");
   delay(1000);
-    sendGSM("AT+CMGD=2\r\n");
-    delay(1000);
-      sendGSM("AT+CMGD=3\r\n");
+  sendGSM("AT+CMGD=2\r\n");
   delay(1000);
-    sendGSM("AT+CMGD=4\r\n");
-    delay(1000);
-      sendGSM("AT+CMGD=5\r\n");
+  sendGSM("AT+CMGD=3\r\n");
   delay(1000);
-    sendGSM("AT+CMGD=6\r\n");
-    delay(1000);
-      sendGSM("AT+CMGD=7\r\n");
+  sendGSM("AT+CMGD=4\r\n");
   delay(1000);
-    sendGSM("AT+CMGD=8\r\n");
+  sendGSM("AT+CMGD=5\r\n");
+  delay(1000);
+  sendGSM("AT+CMGD=6\r\n");
+  delay(1000);
+  sendGSM("AT+CMGD=7\r\n");
+  delay(1000);
+  sendGSM("AT+CMGD=8\r\n");
+  delay(1000);
+}
+
+void deleteAllSMS() {
+  int index;
+  char at_cmd[160] = {'\0'};  
+  for(index=0;index<=20;indexx++)
+  {
+    sprintf(at_cmd,"AT+CMGD=\"%s\"\r\n",index);
+    sendGSM(at_cmd);
     delay(1000);
+  }
 }
 
 void readFingerPrint() {
