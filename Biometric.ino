@@ -11,7 +11,7 @@ char Rx_data[50];
 unsigned char Rx_index = 0;
 int i = 0;
 char msg[160];
-char readMsg[500];
+char readMsg[200];
 int sig;
 
 void setup() {
