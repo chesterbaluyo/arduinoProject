@@ -96,6 +96,7 @@ void readSerialString (char *strArray) {
     strArray[i] = Serial.read();
     i++;
   }
+  i=0;
 }
 
 void readMessages() {
