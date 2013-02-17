@@ -190,10 +190,11 @@ void getResponse() {
         if(responseValue == 20){
           Serial.println("Finger Match. Sending Text....");
           send_msg("09991165260", "Engine Start");
+          digitalWrite(led,HIGH);
         }          
     
     }else{
       readMessages();
-      delay(120000); 
+      delay(5000); 
     }
 }
