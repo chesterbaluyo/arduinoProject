@@ -110,22 +110,13 @@ void readMessages() {
     
     stat = strstr(readMsg, "Success");
   }
-  sendGSM("AT+CMGD=1\r\n");
-  delay(1000);
-  sendGSM("AT+CMGD=2\r\n");
-  delay(1000);
-  sendGSM("AT+CMGD=3\r\n");
-  delay(1000);
-  sendGSM("AT+CMGD=4\r\n");
-  delay(1000);
-  sendGSM("AT+CMGD=5\r\n");
-  delay(1000);
-  sendGSM("AT+CMGD=6\r\n");
-  delay(1000);
-  sendGSM("AT+CMGD=7\r\n");
-  delay(1000);
-  sendGSM("AT+CMGD=8\r\n");
-  delay(1000);
+  p_char = strchr(readMsg,',');
+  p_char1 = p_char+2;
+  p_char = strchr((char *)(p_char1),'"');
+  strcpy(number,(char *)(p_char1));
+  Serial.print("this is the: ");
+  Serial.print(number);
+  deleteAllSMS();
 }
 
 void deleteAllSMS() {
