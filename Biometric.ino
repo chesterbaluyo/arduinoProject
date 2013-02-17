@@ -100,7 +100,7 @@ void readMessages() {
   char *p_char;
   char *p_char1;
   char number[20];
-  sprintf(msg1,"AT+CMGL=\"%s\"\r\n","ALL");  
+  sprintf(msg1,"AT+CMGL=\"%s\"\r\n","REC UNREAD");  
   while(!stat){
     sendGSM(msg1);
     delay(100);
@@ -111,23 +111,31 @@ void readMessages() {
     stat = strstr(readMsg, "Success");
   }
   p_char = strchr(readMsg,',');
-  p_char1 = p_char+2;
+  p_char1 = p_char+15;
+  Serial.println((char *)(p_char));
+  Serial.println((char *)(p_char1));
   p_char = strchr((char *)(p_char1),'"');
   strcpy(number,(char *)(p_char1));
   Serial.print("this is the: ");
-  Serial.print(number);
+  Serial.println(number);
+  delay(5000);
+  clearString(readMsg);
   deleteAllSMS();
 }
 
 void deleteAllSMS() {
   int index;
   char at_cmd[50] = {'\0'};  
-  for(index=0;index<=60;index++)
+  for(index=0;index<=10;index++)
   {
     sprintf(at_cmd,"AT+CMGD=\"%i\"\r\n",index);
     sendGSM(at_cmd);
-    delay(1000);
+    delay(100);
+    readSerialString(readMsg);
+    Serial.println("---------");
+    Serial.println(readMsg);    
   }
+  clearString(readMsg);  
 }
 
 void readFingerPrint() {
