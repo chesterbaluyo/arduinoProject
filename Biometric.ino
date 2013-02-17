@@ -121,10 +121,10 @@ void readMessages() {
 
 void deleteAllSMS() {
   int index;
-  char at_cmd[160] = {'\0'};  
-  for(index=0;index<=20;indexx++)
+  char at_cmd[50] = {'\0'};  
+  for(index=0;index<=60;index++)
   {
-    sprintf(at_cmd,"AT+CMGD=\"%s\"\r\n",index);
+    sprintf(at_cmd,"AT+CMGD=\"%i\"\r\n",index);
     sendGSM(at_cmd);
     delay(1000);
   }
