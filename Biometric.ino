@@ -55,7 +55,7 @@ void sendGSM(char *string){
 
 void clearString(char *strArray) {
   int j;
-  for (j = 250; j > 0; j--)
+  for (j = 550; j > 0; j--)
     strArray[j] = 0x00;
 }
 
