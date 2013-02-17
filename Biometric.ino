@@ -13,8 +13,10 @@ int i = 0;
 char msg[160];
 char readMsg[200];
 int sig;
+int led=13;
 
 void setup() {
+  pinMode(led,OUTPUT);
   Serial.begin(38400);
     
   initGSM();
