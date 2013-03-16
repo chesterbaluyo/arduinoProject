@@ -18,12 +18,16 @@ void setup() {
 
 void loop() {
 //	readGsmSMS();
+
+        if(mySerial.available()) {
+                receiveResponsePacket();
                 
                	if(fpShieldResponsePacket[30] == 20 || fpShieldResponsePacket[8] == 20) {
 		        Serial.println("Finger Match..");
 	        }
 
 	        clearPacket(fpShieldResponsePacket);
+        }
 }
 
 void initializeFingerPrint() {
@@ -63,6 +67,7 @@ void getCheckSum() {
 	fpShieldCommandPacket[23] = (checkSum - (checkSum & 0xFF))/256;
 }
 
+void receiveResponsePacket() {
 	int i = 0;
 	while(mySerial.available()) {
 		fpShieldResponsePacket[i] = mySerial.read();
