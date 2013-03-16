@@ -93,3 +93,28 @@ void receiveResponsePacket() {
 	clearPacket(fpShieldResponsePacket);
 }
 
+void deleteAllFingerPrint() {
+        clearPacket(fpShieldCommandPacket);
+        fpShieldCommandPacket[0] = 0x55;
+        fpShieldCommandPacket[1] = 0xAA;
+        fpShieldCommandPacket[2] = 0x06;  
+        fpShieldCommandPacket[3] = 0x01;
+        
+        sendCommandPacket();
+        delay(500);
+}
+
+void enrollFingerPrint() {
+        clearPacket(fpShieldCommandPacket);
+        fpShieldCommandPacket[0] = 0x55;
+        fpShieldCommandPacket[1] = 0xAA;
+        fpShieldCommandPacket[2] = 0x03;
+        fpShieldCommandPacket[3] = 0x01;
+        fpShieldCommandPacket[4] = 0x02;
+        fpShieldCommandPacket[5] = 0x00;
+        fpShieldCommandPacket[6] = 0x00;
+        fpShieldCommandPacket[7] = 0x01;  
+        
+        sendCommandPacket();
+        delay(500);
+}
