@@ -18,7 +18,27 @@ void setup() {
 
 void loop() {
 //	readGsmSMS();
-
+        if(Serial.available()) {
+                char option;
+            
+                Serial.println("Select Option:");
+                Serial.println("[1]Delete All");
+                Serial.println("[2]Enroll FingerPrint");
+                Serial.println("[3]Read Finger Print");
+                option = Serial.read();
+                Serial.println(option);
+                
+                if(option == '1'){
+                        deleteAllFingerPrint();  
+                }
+                if(option == '2'){
+                        enrollFingerPrint();
+                }
+                if(option == '3'){
+                        readFingerPrint();
+                }         
+        }
+        
         if(mySerial.available()) {
                 receiveResponsePacket();
                 
