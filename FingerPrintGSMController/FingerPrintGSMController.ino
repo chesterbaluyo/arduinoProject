@@ -69,8 +69,17 @@ void matchFingerPrint() {
                 Serial.println(i);
 		i++;
 	}
+	int checkSum = 0;
+	
+	for(int j=0; j<=21;j++) {
+		checkSum += fpShieldResponsePacket[j];
+	}
 
-	if(fpResponsePacket[30] == 20) {
+        Serial.print("+++++++++++++");
+        Serial.print(checkSum&0xFF);
+        Serial.print("--");
+        Serial.println((checkSum - (checkSum & 0xFF))/256);
+        
 	if(fpShieldResponsePacket[30] == 20 || fpShieldResponsePacket[8] == 20) {
 		Serial.println("Finger Match..");
 	}
