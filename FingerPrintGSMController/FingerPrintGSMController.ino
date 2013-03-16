@@ -50,8 +50,7 @@ void loop() {
         }
 }
 
-void initializeFingerPrint() {
-	readFingerPrint();
+void initializeFingerPrint() {             
 }
 
 void clearPacket(byte *packet) {
