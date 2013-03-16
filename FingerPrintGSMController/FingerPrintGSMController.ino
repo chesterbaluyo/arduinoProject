@@ -60,15 +60,13 @@ void getCheckSum() {
 	fpShieldCommandPacket[23] = (checkSum - (checkSum & 0xFF))/256;
 }
 
-int receiveResponsePacket() {
-	return mySerial.read();
-}
-
 void matchFingerPrint() {
 	int i = 0;
-
-	while(mySerial.available) {
-		fpShieldResponsePacket[i] = receiveResponsePacket();
+	while(mySerial.available()) {
+		fpShieldResponsePacket[i] = mySerial.read();
+                Serial.print(fpShieldResponsePacket[i]);
+                Serial.print("----");
+                Serial.println(i);
 		i++;
 	}
 
