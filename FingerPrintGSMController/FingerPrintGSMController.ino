@@ -1,8 +1,8 @@
 #include <SoftwareSerial.h>
 
-SoftwareSerial mySerial(2,3)
-byte fpShieldCommandPacket[24]
-byte fpShieldResponsePacket[48]
+SoftwareSerial mySerial(2,3);
+byte fpShieldCommandPacket[24];
+byte fpShieldResponsePacket[48];
 
 String gsmMessage = String("");
 
