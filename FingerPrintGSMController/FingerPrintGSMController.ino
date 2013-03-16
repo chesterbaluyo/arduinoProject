@@ -60,8 +60,6 @@ void clearPacket(byte *packet) {
 }
 
 void readFingerPrint() {
-	Serial.println("Enter Fingerprint");
-
 	clearPacket(fpShieldCommandPacket);
 	fpShieldCommandPacket[0] = 0x55;
  	fpShieldCommandPacket[1] = 0xAA;
@@ -69,6 +67,8 @@ void readFingerPrint() {
   	fpShieldCommandPacket[3] = 0x01;
 
 	sendCommandPacket();
+        delay(500);
+	Serial.println("Enter Fingerprint");        
 }
 
 void sendCommandPacket() {
@@ -90,9 +90,9 @@ void receiveResponsePacket() {
 	int i = 0;
 	while(mySerial.available()) {
 		fpShieldResponsePacket[i] = mySerial.read();
-                Serial.print(fpShieldResponsePacket[i]);
+                Serial.print(i);
                 Serial.print("----");
-                Serial.println(i);
+                Serial.println(fpShieldResponsePacket[i]);
 		i++;
 	}
 	int checkSum = 0;
