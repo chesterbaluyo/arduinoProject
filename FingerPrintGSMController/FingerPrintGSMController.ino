@@ -21,9 +21,7 @@ void loop() {
 }
 
 void initializeFingerPrint() {
-	
 	readFingerPrint();
-	matchFingerPrint();
 }
 
 void clearPacket(byte *packet) {
@@ -33,7 +31,6 @@ void clearPacket(byte *packet) {
 }
 
 void readFingerPrint() {
-
 	Serial.println("Enter Fingerprint");
 
 	clearPacket(fpShieldCommandPacket);
@@ -60,7 +57,6 @@ void getCheckSum() {
 	fpShieldCommandPacket[23] = (checkSum - (checkSum & 0xFF))/256;
 }
 
-void matchFingerPrint() {
 	int i = 0;
 	while(mySerial.available()) {
 		fpShieldResponsePacket[i] = mySerial.read();
