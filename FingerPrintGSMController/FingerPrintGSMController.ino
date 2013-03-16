@@ -71,8 +71,9 @@ void matchFingerPrint() {
 	}
 
 	if(fpResponsePacket[30] == 20) {
+	if(fpShieldResponsePacket[30] == 20 || fpShieldResponsePacket[8] == 20) {
 		Serial.println("Finger Match..");
-		clearPacket(fpShieldResponsePacket);
 	}
+	clearPacket(fpShieldResponsePacket);
 }
 
