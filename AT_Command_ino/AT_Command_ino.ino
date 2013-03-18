@@ -42,7 +42,6 @@ void initializeGSM() {
           delay(500);
           sendATCommand("AT+CMGF=1");
           delay(500);
-          readAllSMS();
           deleteAllSMS();          
           Serial.println("Success!");
 }
