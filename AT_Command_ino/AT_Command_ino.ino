@@ -1,6 +1,6 @@
 #include <SoftwareSerial.h>
 
-SoftwareSerial gsm(2,3);
+SoftwareSerial gsm(0,1);
 
 String gsmResponseMessage = "";
 String userNumber = "09999969515";
@@ -12,11 +12,7 @@ void setup() {
           gsm.begin(9600);
           pinMode(8, OUTPUT);
           digitalWrite(8, LOW);
-          
-          Serial.begin(19200);
-          Serial.println("Start GSM");
-          Serial.println("");
-          Serial.println("");          
+                   
           delay(2000);
           initializeGSM();        
 }
@@ -24,8 +20,6 @@ void setup() {
 void loop() {
           if(gsm.available()) {
                   receiveGSMResponse();
-                  Serial.println("Response: ");
-                  Serial.println(gsmResponseMessage);
                   if(gsmResponseMessage.substring(2,7)=="+CMT:"){
                           readSMSCommand();                        
                           smsCount++;
@@ -43,7 +37,6 @@ void initializeGSM() {
           sendATCommand("AT+CMGF=1");
           delay(500);
           deleteAllSMS();          
-          Serial.println("Success!");
 }
 
 void sendATCommand(String atCommand) {          
