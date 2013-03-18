@@ -55,9 +55,13 @@ void clearGsmResponseMessage() {
 }
 
 void deleteAllSMS() {
-                  String atCommand = "AT+CMGD=1";
+          for(int i=1;i<=40;i++) {
+                  String atCommand = "AT+CMGD=";
+                  atCommand += i;
                   sendATCommand(atCommand);
                   delay(500);
+          }
+}
 
 void readSMSCommand() {
           int smsIndexLocation = 0;
