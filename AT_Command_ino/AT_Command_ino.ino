@@ -16,9 +16,14 @@ void setup() {
 void loop() {
           if(gsm.available()) {
                   receiveGSMResponse();
+                  Serial.println("Response: ");
+                  Serial.println(gsmResponseMessage);
                   if(gsmResponseMessage.substring(2,7)=="+CMT:"){
-                          Serial.print("Sender Number: ");
-                          Serial.println(gsmResponseMessage.substring(9,22));                  
+                          readSMSCommand();                        
+                          smsCount++;
+                          if(smsCount == 36) {
+                                  deleteAllSMS();
+                          }
                   }
                   clearGsmResponseMessage();                  
           }
@@ -34,10 +39,7 @@ void initializeGSM() {
           Serial.println("Success!");
 }
 
-void sendATCommand(String atCommand) {
-          Serial.print(atCommand);
-          delay(2000);
-          Serial.println(" is sending...");          
+void sendATCommand(String atCommand) {          
           gsm.println(atCommand);
 }
 
