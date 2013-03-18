@@ -50,8 +50,7 @@ void receiveGSMResponse() {
 }
 
 void clearGsmResponseMessage() {
-          message = String("");
-          delay(5000);
+          gsmResponseMessage = String("");
 }
 
 void deleteAllSMS() {
