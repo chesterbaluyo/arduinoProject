@@ -1,10 +1,18 @@
 #include <SoftwareSerial.h>
 
 SoftwareSerial gsm(2,3);
+
 String gsmResponseMessage = "";
+String userNumber = "09999969515";
+String userPassword = "123456";
+int smsCount = 0;
+int starterRelay = 8;
 
 void setup() {
           gsm.begin(9600);
+          pinMode(8, OUTPUT);
+          digitalWrite(8, LOW);
+          
           Serial.begin(19200);
           Serial.println("Start GSM");
           Serial.println("");
