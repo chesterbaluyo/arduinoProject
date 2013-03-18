@@ -58,4 +58,15 @@ void deleteAllSMS() {
                   String atCommand = "AT+CMGD=1";
                   sendATCommand(atCommand);
                   delay(500);
+void sendSMSAlert(String message) {
+          char ctl_z = 0x1A;
+          String atCommand = "AT+CMGS= \"";
+          
+          atCommand += userNumber + "\"";
+          sendATCommand(atCommand);
+          delay(300);
+          
+          atCommand = message + ctl_z;
+          sendATCommand(atCommand);
+          delay(90);
 }
