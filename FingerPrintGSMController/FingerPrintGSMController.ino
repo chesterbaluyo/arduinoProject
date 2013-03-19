@@ -56,7 +56,7 @@ void loop() {
 
 void initializePin() {
         pinMode(starterRelay, OUTPUT);
-        pinMode(fpScanSwitch, INPUT);
+        pinMode(fpSwitch, INPUT);
         pinMode(speedMeter, INPUT);
         pinMode(leftSwitch, INPUT);
         pinMode(rightSwitch, INPUT);
@@ -124,7 +124,12 @@ void readSMSCommand() {
                   digitalWrite(starterRelay, HIGH);                  
           }
           if(command == "CHANGE_ID" && password == userPassword) {
-            
+                  digitalWrite(starterRelay, LOW);           
+                  deleteAllFingerPrint();
+                  delay(2000);
+                  enrollFingerPrint();
+                  delay(2000);
+                  readFingerPrint();                 
           }        
 }
 
