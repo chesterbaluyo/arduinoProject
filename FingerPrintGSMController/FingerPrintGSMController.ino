@@ -20,7 +20,6 @@ int rightSwitch = 10;
 
 void setup() {
 
-	Serial.begin(38400);
         gsm.begin(9600);
 	fingerPrint.begin(115200);
 
@@ -161,8 +160,7 @@ void readFingerPrint() {
   	fpShieldCommandPacket[3] = 0x01;
 
 	sendCommandPacket();
-        delay(500);
-	Serial.println("Enter Fingerprint");        
+        delay(500);       
 }
 
 void sendCommandPacket() {
@@ -184,26 +182,8 @@ void receiveResponsePacket() {
 	int i = 0;
 	while(fingerPrint.available()) {
 		fpShieldResponsePacket[i] = fingerPrint.read();
-                Serial.print(i);
-                Serial.print("----");
-                Serial.println(fpShieldResponsePacket[i]);
 		i++;
 	}
-	int checkSum = 0;
-	
-	for(int j=0; j<=21;j++) {
-		checkSum += fpShieldResponsePacket[j];
-	}
-
-        Serial.print("+++++++++++++");
-        Serial.print(checkSum&0xFF);
-        Serial.print("--");
-        Serial.println((checkSum - (checkSum & 0xFF))/256);
-        
-	if(fpShieldResponsePacket[30] == 20 || fpShieldResponsePacket[8] == 20) {
-		Serial.println("Finger Match..");
-	}
-	clearPacket(fpShieldResponsePacket);
 }
 
 void deleteAllFingerPrint() {
