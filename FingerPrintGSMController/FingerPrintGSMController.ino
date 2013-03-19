@@ -1,6 +1,9 @@
 #include <SoftwareSerial.h>
 
-SoftwareSerial mySerial(2,3);
+
+SoftwareSerial gsm(0,1);
+SoftwareSerial fingerPrint(2,3);
+
 byte fpShieldCommandPacket[24];
 byte fpShieldResponsePacket[48];
 
