@@ -29,26 +29,20 @@ void setup() {
 
 void loop() {
 
-        if(Serial.available()) {
-                char option;
-            
-                Serial.println("Select Option:");
-                Serial.println("[1]Delete All");
-                Serial.println("[2]Enroll FingerPrint");
-                Serial.println("[3]Read Finger Print");
-                option = Serial.read();
-                Serial.println(option);
+        if(gsm.available()) {
+                receiveGSMResponse();
+                if(gsmResponseMessage.substring(2,7)=="+CMT:"){
+                        readSMSCommand();                        
+                        smsCount++;
+                        if(smsCount == 36) {
+                                deleteAllSMS();
+                        }
+                }
+                clearGsmResponseMessage();
                 
-                if(option == '1'){
-                        deleteAllFingerPrint();  
-                }
-                if(option == '2'){
-                        enrollFingerPrint();
-                }
-                if(option == '3'){
-                        readFingerPrint();
-                }         
+                readFingerPrint(); //Should be remove if fpSwitch is available                
         }
+
         
         if(fingerPrint.available()) {
                 receiveResponsePacket();
