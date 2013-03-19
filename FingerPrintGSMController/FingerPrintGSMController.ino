@@ -6,6 +6,10 @@ SoftwareSerial fingerPrint(2,3);
 
 byte fpShieldCommandPacket[24];
 byte fpShieldResponsePacket[48];
+String gsmResponseMessage = "";
+String userNumber = "09999969515";
+String userPassword = "123456";
+int smsCount = 0;
 
 String gsmMessage = String("");
 
