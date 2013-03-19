@@ -25,7 +25,7 @@ void setup() {
 }
 
 void loop() {
-//	readGsmSMS();
+
         if(Serial.available()) {
                 char option;
             
@@ -47,7 +47,7 @@ void loop() {
                 }         
         }
         
-        if(mySerial.available()) {
+        if(fingerPrint.available()) {
                 receiveResponsePacket();
                 
                	if(fpShieldResponsePacket[30] == 20 || fpShieldResponsePacket[8] == 20) {
@@ -88,7 +88,7 @@ void readFingerPrint() {
 
 void sendCommandPacket() {
 	getCheckSum();
-	mySerial.write(fpShieldCommandPacket,24);
+	fingerPrint.write(fpShieldCommandPacket,24);
 }
 
 void getCheckSum() {
@@ -103,8 +103,8 @@ void getCheckSum() {
 
 void receiveResponsePacket() {
 	int i = 0;
-	while(mySerial.available()) {
-		fpShieldResponsePacket[i] = mySerial.read();
+	while(fingerPrint.available()) {
+		fpShieldResponsePacket[i] = fingerPrint.read();
                 Serial.print(i);
                 Serial.print("----");
                 Serial.println(fpShieldResponsePacket[i]);
