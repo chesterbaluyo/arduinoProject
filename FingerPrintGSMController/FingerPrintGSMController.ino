@@ -20,11 +20,8 @@ int rightSwitch = 10;
 void setup() {
 
 	Serial.begin(38400);
-//	initializeGSM();
-
-	mySerial.begin(115200);
-	initializeFingerPrint();
-			
+        gsm.begin(9600);
+	fingerPrint.begin(115200);			
 }
 
 void loop() {
