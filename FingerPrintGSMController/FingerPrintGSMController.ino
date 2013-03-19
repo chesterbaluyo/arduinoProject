@@ -21,7 +21,10 @@ void setup() {
 
 	Serial.begin(38400);
         gsm.begin(9600);
-	fingerPrint.begin(115200);			
+	fingerPrint.begin(115200);
+
+        initializePin();
+        initializeGSM();			
 }
 
 void loop() {
