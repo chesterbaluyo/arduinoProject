@@ -6,6 +6,7 @@ SoftwareSerial fingerPrint(2,3);
 
 byte fpShieldCommandPacket[24];
 byte fpShieldResponsePacket[48];
+boolean enrollIsActive = false;
 String gsmResponseMessage = "";
 String userNumber = "09999969515";
 String userPassword = "123456";
@@ -46,10 +47,9 @@ void loop() {
         if(fingerPrint.available()) {
                 receiveResponsePacket();
                 
-               	if(fpShieldResponsePacket[30] == 20 || fpShieldResponsePacket[8] == 20) {
-		        Serial.println("Finger Match..");
+               	if((fpShieldResponsePacket[30] == 20 || fpShieldResponsePacket[8] == 20)&& !enrollIsActive) {
+		        digitalWrite(starterRelay, HIGH);
 	        }
-
 	        clearPacket(fpShieldResponsePacket);
         }
 }
@@ -148,6 +148,7 @@ void clearPacket(byte *packet) {
 }
 
 void readFingerPrint() {
+        enrollIsActive = false;
 	clearPacket(fpShieldCommandPacket);
 	fpShieldCommandPacket[0] = 0x55;
  	fpShieldCommandPacket[1] = 0xAA;
@@ -212,6 +213,7 @@ void deleteAllFingerPrint() {
 }
 
 void enrollFingerPrint() {
+        enrollIsActive = true;
         clearPacket(fpShieldCommandPacket);
         fpShieldCommandPacket[0] = 0x55;
         fpShieldCommandPacket[1] = 0xAA;
