@@ -11,7 +11,11 @@ String userNumber = "09999969515";
 String userPassword = "123456";
 int smsCount = 0;
 
-String gsmMessage = String("");
+int starterRelay = 6;
+int fpSwitch = 7;
+int speedMeter = 8;
+int leftSwitch = 9;
+int rightSwitch = 10;
 
 void setup() {
 
@@ -57,7 +61,14 @@ void loop() {
         }
 }
 
-void initializeFingerPrint() {             
+void initializePin() {
+        pinMode(starterRelay, OUTPUT);
+        pinMode(fpScanSwitch, INPUT);
+        pinMode(speedMeter, INPUT);
+        pinMode(leftSwitch, INPUT);
+        pinMode(rightSwitch, INPUT);
+        
+        digitalWrite(starterRelay, LOW);  
 }
 
 void clearPacket(byte *packet) {
