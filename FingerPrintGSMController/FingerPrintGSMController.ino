@@ -7,6 +7,8 @@ SoftwareSerial fingerPrint(2,3);
 byte fpShieldCommandPacket[24];
 byte fpShieldResponsePacket[48];
 boolean enrollIsActive = false;
+boolean runOnce = true;
+boolean overRide = false;
 String gsmResponseMessage = "";
 String userNumber = "09999969515";
 String userPassword = "123456";
@@ -14,6 +16,7 @@ int smsCount = 0;
 
 int starterRelay = 6;
 int fpSwitch = 7;
+int fpSwitchOn = 0;
 int speedMeter = 8;
 int leftSwitch = 9;
 int rightSwitch = 10;
@@ -28,6 +31,21 @@ void setup() {
 }
 
 void loop() {
+        fpSwitchOn = digitalRead(fpSwitch);      
+        
+        if(fpSwitchOn) { 
+                if(runOnce) {  
+                        readFingerPrint();
+                        runOnce = false;
+                }
+        }
+        
+        else {
+                if(!overRide) {
+                        digitalWrite(starterRelay, LOW);
+                }            
+                runOnce = true;
+        }
 
         if(gsm.available()) {
                 receiveGSMResponse();
@@ -120,6 +138,7 @@ void readSMSCommand() {
                   sendSMSAlert("Engine is stop.");          
           }
           if(command == "OVERRIDE" && password == userPassword) {
+                  overRide = true;
                   digitalWrite(starterRelay, HIGH);                  
           }
           if(command == "CHANGE_ID" && password == userPassword) {
