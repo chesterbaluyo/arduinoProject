@@ -8,7 +8,6 @@ byte fpShieldCommandPacket[24];
 byte fpShieldResponsePacket[48];
 boolean enrollIsActive = false;
 boolean runOnce = true;
-boolean overRide = false;
 String gsmResponseMessage = "";
 String userNumber = "09999969515";
 String userPassword = "123456";
@@ -41,9 +40,6 @@ void loop() {
         }
         
         else {
-                if(!overRide) {
-                        digitalWrite(starterRelay, LOW);
-                }            
                 runOnce = true;
         }
 
@@ -138,7 +134,6 @@ void readSMSCommand() {
                   sendSMSAlert("Engine is stop.");          
           }
           if(command == "OVERRIDE" && password == userPassword) {
-                  overRide = true;
                   digitalWrite(starterRelay, HIGH);                  
           }
           if(command == "CHANGE_ID" && password == userPassword) {
