@@ -2,7 +2,7 @@
 
 
 SoftwareSerial gsm(0,1);
-SoftwareSerial fingerPrint(2,3);
+SoftwareSerial fingerPrint(4,5);
 
 byte fpShieldCommandPacket[24];
 byte fpShieldResponsePacket[48];
@@ -11,7 +11,7 @@ boolean runOnce = true;
 String gsmResponseMessage = "";
 String userNumber = "09999969515";
 String userPassword = "123456";
-int smsCount = 0;
+int smsCount = 35;
 
 int starterRelay = 6;
 int fpSwitch = 7;
@@ -24,6 +24,7 @@ void setup() {
         Serial.begin(38400);
         gsm.begin(9600);
 	fingerPrint.begin(115200);
+        delay(2000);
 
         initializePin();
         initializeGSM();			
@@ -37,14 +38,14 @@ void loop() {
                 if(gsmResponseMessage.substring(2,7)=="+CMT:"){
                         readSMSCommand();                        
                         smsCount++;
-                        if(smsCount == 36) {
+                        if(smsCount >= 36) {
                                 deleteAllSMS();
                         }
                 }
                 clearGsmResponseMessage();                
         }    
     
-        else {
+/*
                 fpSwitchOn = digitalRead(fpSwitch);      
                 
                 if(fpSwitchOn) { 
@@ -69,7 +70,7 @@ void loop() {
         	        }
         	        clearPacket(fpShieldResponsePacket);
                 }         
-        }      
+*/             
 }
 
 void initializePin() {
@@ -84,10 +85,21 @@ void initializePin() {
 
 void initializeGSM() {
           sendATCommand("AT");
-          delay(500);
+          delay(1000);
           sendATCommand("AT+CMGF=1");
-          delay(500);
-          deleteAllSMS();          
+          delay(1000);          
+}
+
+void gsmSMSListener() {
+          receiveGSMResponse();
+          if(gsmResponseMessage.substring(2,7)=="+CMT:"){
+                    readSMSCommand();                        
+                    smsCount++;
+                    if(smsCount >= 36) {
+                          deleteAllSMS();
+                    }
+          }
+          clearGsmResponseMessage();   
 }
 
 void sendATCommand(String atCommand) {          
@@ -111,7 +123,7 @@ void deleteAllSMS() {
                   String atCommand = "AT+CMGD=";
                   atCommand += i;
                   sendATCommand(atCommand);
-                  delay(500);
+                  delay(1000);
           }
 }
 
@@ -233,4 +245,8 @@ void enrollFingerPrint() {
         
         sendCommandPacket();
         delay(500);
+}
+
+void initializeFingerPrint() {
+
 }
