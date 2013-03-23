@@ -201,7 +201,8 @@ void getCheckSum() {
 	fpShieldCommandPacket[23] = (checkSum - (checkSum & 0xFF))/256;
 }
 
-void receiveResponsePacket() {
+boolean receiveResponsePacket() {
+        boolean isAvailable = false;
 	int i = 0;
 	while(Serial.available()) {
 		fpShieldResponsePacket[i] = Serial.read();
@@ -209,7 +210,9 @@ void receiveResponsePacket() {
                 Serial.print("-----");
                 Serial.println(fpShieldResponsePacket[i]);
 		i++;
+                isAvailable = true;
 	}
+        return isAvailable;
 }
 
 void deleteAllFingerPrint() {
