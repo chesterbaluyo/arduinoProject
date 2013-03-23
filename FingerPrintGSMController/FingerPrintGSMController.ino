@@ -30,23 +30,7 @@ void setup() {
 }
 
 void loop() {       
-   
-        if(gsm.available()) {
-                receiveGSMResponse();
-                Serial.print("Response:---");
-                Serial.println(gsmResponseMessage);
-                if(gsmResponseMessage.substring(2,7)=="+CMT:"){
-                        readSMSCommand();                        
-                        smsCount++;
-                        if(smsCount >= 15) {
-                                deleteAllSMS();
-                                smsCount = 0;
-                        }
-                }
-                clearGsmResponseMessage();                
-        }    
-    
-                fpSwitchOn = digitalRead(fpSwitch);      
+             fpSwitchOn = digitalRead(fpSwitch);      
                 
                 if(fpSwitchOn) { 
                         if(runOnce) { 
@@ -66,7 +50,8 @@ void loop() {
         		        digitalWrite(starterRelay, HIGH);
         	        }
         	        clearPacket(fpShieldResponsePacket);
-                }                      
+                }
+        gsmSMSListener();        
 }
 
 void initializePin() {
@@ -87,15 +72,19 @@ void initializeGSM() {
 }
 
 void gsmSMSListener() {
-          receiveGSMResponse();
-          if(gsmResponseMessage.substring(2,7)=="+CMT:"){
-                    readSMSCommand();                        
-                    smsCount++;
-                    if(smsCount >= 36) {
-                          deleteAllSMS();
-                    }
-          }
-          clearGsmResponseMessage();   
+                
+          if(receiveGSMResponse()) {
+                digitalWrite(starterRelay, HIGH);
+                if(gsmResponseMessage.substring(2,7)=="+CMT:"){
+                        digitalWrite(starterRelay, LOW);
+                        readSMSCommand();                        
+                        smsCount++;
+                        if(smsCount >= 36) {
+                                deleteAllSMS();
+                        }
+                }
+                clearGsmResponseMessage();    
+          }      
 }
 
 void sendATCommand(String atCommand) {          
