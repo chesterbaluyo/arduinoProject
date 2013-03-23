@@ -91,12 +91,16 @@ void sendATCommand(String atCommand) {
           gsm.println(atCommand);
 }
 
-void receiveGSMResponse() {
-          while(gsm.available()) {
+boolean receiveGSMResponse() {
+          boolean isAvailable = false;
+          
+          while(Serial.available()) {
                   char incomingData = '\0';
                   incomingData = gsm.read(); 
                   gsmResponseMessage += incomingData;
+                  isAvailable = true;
           }         
+          return isAvailable;
 }
 
 void clearGsmResponseMessage() {
