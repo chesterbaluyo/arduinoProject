@@ -43,14 +43,8 @@ void loop() {
                         digitalWrite(starterRelay, LOW);            
                         runOnce = true;
                 }
-        
-                if(Serial.available()) {
-                        receiveResponsePacket();
-                       	if((fpShieldResponsePacket[9] == 1)&& !enrollIsActive) {
-        		        digitalWrite(starterRelay, HIGH);
-        	        }
-        	        clearPacket(fpShieldResponsePacket);
-                }
+
+        initializeFingerPrint();
         gsmSMSListener();        
 }
 
@@ -165,6 +159,15 @@ void sendSMSAlert(String message) {
           delay(90);
 }
 
+void initializeFingerPrint() {
+        if(receiveResponsePacket()) {  
+                    if((fpShieldResponsePacket[30] == 20 || fpShieldResponsePacket[8] == 20)&& !enrollIsActive) {
+         	            digitalWrite(starterRelay, HIGH);
+        	    }
+        	    clearPacket(fpShieldResponsePacket);
+        }      
+}
+
 void clearPacket(byte *packet) {
 	for(int i=0; i<=50; i++) {
 		packet[i] = 0x00;	
@@ -236,6 +239,4 @@ void enrollFingerPrint() {
         delay(500);
 }
 
-void initializeFingerPrint() {
 
-}
