@@ -1,8 +1,7 @@
 #include <SoftwareSerial.h>
 
 
-SoftwareSerial gsm(0,1);
-SoftwareSerial fingerPrint(4,5);
+SoftwareSerial gsm(2,3);
 
 byte fpShieldCommandPacket[24];
 byte fpShieldResponsePacket[48];
@@ -11,7 +10,7 @@ boolean runOnce = true;
 String gsmResponseMessage = "";
 String userNumber = "09999969515";
 String userPassword = "123456";
-int smsCount = 35;
+int smsCount = 0;
 
 int starterRelay = 6;
 int fpSwitch = 7;
@@ -21,36 +20,36 @@ int leftSwitch = 9;
 int rightSwitch = 10;
 
 void setup() {
-        Serial.begin(38400);
         gsm.begin(9600);
-	fingerPrint.begin(115200);
-        delay(2000);
+	Serial.begin(115200);
+        delay(5000);
 
         initializePin();
-        initializeGSM();			
+        initializeGSM();
+        Serial.println("Success");			
 }
 
 void loop() {       
    
         if(gsm.available()) {
                 receiveGSMResponse();
-                Serial.println("GSM Responding...");
+                Serial.print("Response:---");
+                Serial.println(gsmResponseMessage);
                 if(gsmResponseMessage.substring(2,7)=="+CMT:"){
                         readSMSCommand();                        
                         smsCount++;
-                        if(smsCount >= 36) {
+                        if(smsCount >= 15) {
                                 deleteAllSMS();
+                                smsCount = 0;
                         }
                 }
                 clearGsmResponseMessage();                
         }    
     
-/*
                 fpSwitchOn = digitalRead(fpSwitch);      
                 
                 if(fpSwitchOn) { 
-                        if(runOnce) {
-                                Serial.println("Read FingerPrint...");  
+                        if(runOnce) { 
                                 readFingerPrint();
                                 runOnce = false;
                         }
@@ -61,16 +60,13 @@ void loop() {
                         runOnce = true;
                 }
         
-                if(fingerPrint.available()) {
+                if(Serial.available()) {
                         receiveResponsePacket();
-                        Serial.println("FP Responding...");
-                       	if((fpShieldResponsePacket[30] == 20 || fpShieldResponsePacket[8] == 20)&& !enrollIsActive) {
-                                Serial.println("Finger Match");
+                       	if((fpShieldResponsePacket[9] == 1)&& !enrollIsActive) {
         		        digitalWrite(starterRelay, HIGH);
         	        }
         	        clearPacket(fpShieldResponsePacket);
-                }         
-*/             
+                }                      
 }
 
 void initializePin() {
@@ -119,7 +115,7 @@ void clearGsmResponseMessage() {
 }
 
 void deleteAllSMS() {
-          for(int i=1;i<=40;i++) {
+          for(int i=1;i<=15;i++) {
                   String atCommand = "AT+CMGD=";
                   atCommand += i;
                   sendATCommand(atCommand);
@@ -147,16 +143,13 @@ void readSMSCommand() {
           password = sms.substring(smsIndexLocation+1,smsIndexLocation+7);       
           
           if(command == "STOP" && password == userPassword) {
-                  Serial.println("Stop");            
                   digitalWrite(starterRelay, LOW);
                   sendSMSAlert("Engine is stop.");          
           }
           if(command == "OVERRIDE" && password == userPassword) {
-                  Serial.println("Override");            
                   digitalWrite(starterRelay, HIGH);                  
           }
           if(command == "CHANGE_ID" && password == userPassword) {
-                  Serial.println("Change ID");
                   digitalWrite(starterRelay, LOW);           
                   deleteAllFingerPrint();
                   delay(2000);
@@ -199,7 +192,7 @@ void readFingerPrint() {
 
 void sendCommandPacket() {
 	getCheckSum();
-	fingerPrint.write(fpShieldCommandPacket,24);
+	Serial.write(fpShieldCommandPacket,24);
 }
 
 void getCheckSum() {
@@ -214,8 +207,11 @@ void getCheckSum() {
 
 void receiveResponsePacket() {
 	int i = 0;
-	while(fingerPrint.available()) {
-		fpShieldResponsePacket[i] = fingerPrint.read();
+	while(Serial.available()) {
+		fpShieldResponsePacket[i] = Serial.read();
+                Serial.print(i);
+                Serial.print("-----");
+                Serial.println(fpShieldResponsePacket[i]);
 		i++;
 	}
 }
