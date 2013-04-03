@@ -6,7 +6,7 @@ SoftwareSerial gsm(2,3);
 byte fpShieldCommandPacket[24];
 byte fpShieldResponsePacket[48];
 boolean enrollIsActive = false;
-boolean runOnce = true;
+boolean deleteIsActive = false;
 String gsmResponseMessage = "";
 String userNumber = "09999969515";
 String userPassword = "123456";
@@ -22,29 +22,22 @@ int rightSwitch = 10;
 void setup() {
         gsm.begin(9600);
 	Serial.begin(115200);
-        delay(5000);
 
         initializePin();
+        delay(3000);        
         initializeGSM();
-        Serial.println("Success");			
+        readFingerPrint();        			
 }
 
-void loop() {       
-             fpSwitchOn = digitalRead(fpSwitch);      
-                
-                if(fpSwitchOn) { 
-                        if(runOnce) { 
-                                readFingerPrint();
-                                runOnce = false;
-                        }
-                }
-                
-                else {
-                        digitalWrite(starterRelay, LOW);            
-                        runOnce = true;
-                }
-
-        initializeFingerPrint();
+void loop() { 
+        if(!initializeFingerPrint()) {                
+                if(deleteIsActive) {                  
+                        enrollFingerPrint();
+                        delay(2000); 
+                        deleteIsActive = false;
+                }                
+        }   
+        gsm.listen();
         gsmSMSListener();        
 }
 
@@ -61,20 +54,25 @@ void initializePin() {
 void initializeGSM() {
           sendATCommand("AT");
           delay(1000);
+          receiveGSMResponse();
+          clearGsmResponseMessage();
           sendATCommand("AT+CMGF=1");
-          delay(1000);          
+          delay(1000);
+          receiveGSMResponse();
+          clearGsmResponseMessage();          
 }
 
 void gsmSMSListener() {
                 
           if(receiveGSMResponse()) {
-                digitalWrite(starterRelay, HIGH);
-                if(gsmResponseMessage.substring(2,7)=="+CMT:"){
-                        digitalWrite(starterRelay, LOW);
+                Serial.print("Response:---");
+                Serial.println(gsmResponseMessage);
+                if(gsmResponseMessage.substring(2,6)=="+CMT"){
                         readSMSCommand();                        
                         smsCount++;
-                        if(smsCount >= 36) {
+                        if(smsCount >= 15) {
                                 deleteAllSMS();
+                                smsCount = 0;
                         }
                 }
                 clearGsmResponseMessage();    
@@ -88,7 +86,7 @@ void sendATCommand(String atCommand) {
 boolean receiveGSMResponse() {
           boolean isAvailable = false;
           
-          while(Serial.available()) {
+          while(gsm.available()>0) {
                   char incomingData = '\0';
                   incomingData = gsm.read(); 
                   gsmResponseMessage += incomingData;
@@ -118,7 +116,6 @@ void readSMSCommand() {
           
           smsIndexLocation = gsmResponseMessage.indexOf("\"");
           sms = gsmResponseMessage.substring(smsIndexLocation+1);
-          
           while(sms.indexOf("\"")>=0) {
                   smsIndexLocation = sms.indexOf("\"");
                   sms = sms.substring(smsIndexLocation+1);
@@ -139,10 +136,7 @@ void readSMSCommand() {
           if(command == "CHANGE_ID" && password == userPassword) {
                   digitalWrite(starterRelay, LOW);           
                   deleteAllFingerPrint();
-                  delay(2000);
-                  enrollFingerPrint();
-                  delay(2000);
-                  readFingerPrint();                 
+                  delay(2000);                
           }        
 }
 
@@ -159,13 +153,16 @@ void sendSMSAlert(String message) {
           delay(90);
 }
 
-void initializeFingerPrint() {
+boolean initializeFingerPrint() {
+        boolean isActive = false;
         if(receiveResponsePacket()) {  
-                    if((fpShieldResponsePacket[30] == 20 || fpShieldResponsePacket[8] == 20)&& !enrollIsActive) {
+                    if((fpShieldResponsePacket[9] == 1)&& !enrollIsActive) {
          	            digitalWrite(starterRelay, HIGH);
         	    }
         	    clearPacket(fpShieldResponsePacket);
+                    isActive = true;
         }      
+        return isActive;
 }
 
 void clearPacket(byte *packet) {
@@ -204,7 +201,7 @@ void getCheckSum() {
 boolean receiveResponsePacket() {
         boolean isAvailable = false;
 	int i = 0;
-	while(Serial.available()) {
+	while(Serial.available()>0) {
 		fpShieldResponsePacket[i] = Serial.read();
                 Serial.print(i);
                 Serial.print("-----");
@@ -216,6 +213,7 @@ boolean receiveResponsePacket() {
 }
 
 void deleteAllFingerPrint() {
+        deleteIsActive = true;
         clearPacket(fpShieldCommandPacket);
         fpShieldCommandPacket[0] = 0x55;
         fpShieldCommandPacket[1] = 0xAA;
@@ -241,5 +239,3 @@ void enrollFingerPrint() {
         sendCommandPacket();
         delay(500);
 }
-
-
