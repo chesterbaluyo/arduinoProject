@@ -7,8 +7,9 @@ byte fpShieldCommandPacket[24];
 byte fpShieldResponsePacket[48];
 boolean enrollIsActive = false;
 boolean deleteIsActive = false;
+boolean deleteAllSMSisActive = false;
 String gsmResponseMessage = "";
-String userNumber = "09999969515";
+String userNumber = "09352983630";
 String userPassword = "123456";
 int smsCount = 0;
 
@@ -30,13 +31,25 @@ void setup() {
 }
 
 void loop() { 
-        if(!initializeFingerPrint()) {                
-                if(deleteIsActive) {                  
+        if(!initializeFingerPrint()) {
+                if(enrollIsActive) {
+                        delay(5000);
+                        digitalWrite(starterRelay, HIGH);
                         enrollFingerPrint();
-                        delay(2000); 
+                        enrollIsActive = false;                
+                }          
+                if(deleteIsActive) {
+                        deleteAllFingerPrint();                  
                         deleteIsActive = false;
+                        enrollIsActive = true;
                 }                
-        }   
+        }
+     
+        if(deleteAllSMSisActive) {
+                deleteAllSMS();
+                deleteAllSMSisActive = false;
+        }
+        
         gsm.listen();
         gsmSMSListener();        
 }
@@ -131,12 +144,12 @@ void readSMSCommand() {
                   sendSMSAlert("Engine is stop.");          
           }
           if(command == "OVERRIDE" && password == userPassword) {
-                  digitalWrite(starterRelay, HIGH);                  
+                  digitalWrite(starterRelay, HIGH);
+                  sendSMSAlert("Engine Start.");                  
           }
-          if(command == "CHANGE_ID" && password == userPassword) {
+          if(command == "RENEW" && password == userPassword) {
                   digitalWrite(starterRelay, LOW);           
-                  deleteAllFingerPrint();
-                  delay(2000);                
+                  deleteIsActive = true;                  
           }        
 }
 
@@ -159,6 +172,7 @@ boolean initializeFingerPrint() {
                     if((fpShieldResponsePacket[9] == 1)&& !enrollIsActive) {
          	            digitalWrite(starterRelay, HIGH);
         	    }
+                    deleteAllSMSisActive = true;        
         	    clearPacket(fpShieldResponsePacket);
                     isActive = true;
         }      
@@ -213,7 +227,6 @@ boolean receiveResponsePacket() {
 }
 
 void deleteAllFingerPrint() {
-        deleteIsActive = true;
         clearPacket(fpShieldCommandPacket);
         fpShieldCommandPacket[0] = 0x55;
         fpShieldCommandPacket[1] = 0xAA;
