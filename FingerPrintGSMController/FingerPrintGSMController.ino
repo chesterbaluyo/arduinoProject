@@ -1,18 +1,29 @@
 #include <SoftwareSerial.h>
+#include <DTMF.h>
 
-
-SoftwareSerial gsm(2,3);
-
+/* FingerPrint Shield */ 
 byte fpShieldCommandPacket[24];
 byte fpShieldResponsePacket[48];
 boolean enrollIsActive = false;
 boolean deleteIsActive = false;
+
+/* GSM Shield */
+SoftwareSerial gsm(2,3);
 boolean deleteAllSMSisActive = false;
 String gsmResponseMessage = "";
 String userNumber = "09352983630";
 String userPassword = "123456";
 int smsCount = 0;
 
+/* DTMF Decoder */
+float n = 128.0;
+float samplingRate = 8926.0;
+DTMF dtmf = DTMF(n, samplingRate);
+int noCharCount = 0;
+float dMags[8];
+
+/* Sensors and Switches */
+int dtmfSensor = A0;
 int starterRelay = 6;
 int fpSwitch = 7;
 int fpSwitchOn = 0;
@@ -61,6 +72,9 @@ void loop() {
         
         gsm.listen();
         gsmSMSListener();        
+        
+        //TODO if incoming call is available do readDTMF().
+        readDTMF();        
 }
 
 void initializePin() {
@@ -288,4 +302,22 @@ void enrollFingerPrint() {
         
         sendCommandPacket();
         delay(500);
+}
+
+void readDTMF() {
+        char thisChar;
+        dtmf.sample(dtmfSensor);
+        dtmf.detect(dMags, 506);
+        thisChar = dtmf.button(dMags, 1800.);
+        if(thisChar) {
+                Serial.print(thisChar);
+                noCharCount = 0;
+        } else {
+                if(++noCharCount == 50) {
+                        Serial.println("");
+                }
+                if(noCharCount > 30000) {
+                        noCharCount = 51;
+                }
+        }
 }
