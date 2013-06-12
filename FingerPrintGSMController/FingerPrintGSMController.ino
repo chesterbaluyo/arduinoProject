@@ -27,6 +27,15 @@ void setup() {
         initializePin();
         delay(3000);        
         initializeGSM();
+        delay(500);
+        setSMSMessageFormat();
+        delay(500);
+        enableAutomaticAnswer();
+        delay(500);
+        enableLoudSpeaker();
+        delay(500);
+        setLoudnessToMax();
+        delay(500);
         readFingerPrint();        			
 }
 
@@ -65,21 +74,42 @@ void initializePin() {
 }
 
 void initializeGSM() {
+          Serial.print("Initialize GSM: ");  
           sendATCommand("AT");
-          delay(1000);
+          receiveGSMResponse();
+          clearGsmResponseMessage();                    
+}
+
+void setSMSMessageFormat() {
+          Serial.print("Set SMS message format: ");  
+          sendATCommand("AT+CMGF=1");
           receiveGSMResponse();
           clearGsmResponseMessage();
-          sendATCommand("AT+CMGF=1");
-          delay(1000);
+}
+
+void enableAutomaticAnswer() {
+          Serial.print("Enable automatic answering: ");  
+          sendATCommand("ATS0=1");
+          receiveGSMResponse();
+          clearGsmResponseMessage();
+}
+
+void enableLoudSpeaker() {
+          Serial.print("Loud speaker mode: ");   
+          sendATCommand("ATM9"); 
+          receiveGSMResponse();
+          clearGsmResponseMessage();
+}
+
+void setLoudnessToMax() {
+          Serial.print("Set maximum loudness: ");   
+          sendATCommand("ATL9");
           receiveGSMResponse();
           clearGsmResponseMessage();          
 }
 
 void gsmSMSListener() {
-                
           if(receiveGSMResponse()) {
-                Serial.print("Response:---");
-                Serial.println(gsmResponseMessage);
                 if(gsmResponseMessage.substring(2,6)=="+CMT"){
                         readSMSCommand();                        
                         smsCount++;
@@ -104,7 +134,14 @@ boolean receiveGSMResponse() {
                   incomingData = gsm.read(); 
                   gsmResponseMessage += incomingData;
                   isAvailable = true;
-          }         
+          }
+ 
+          if(isAvailable) {
+                  Serial.println(gsmResponseMessage);          
+          }
+          else {
+                  Serial.println("*** GSM connection failed! ***");
+          } 
           return isAvailable;
 }
 
