@@ -11,6 +11,7 @@ boolean activeDeleteUserFingerPrint = false;
 SoftwareSerial gsm(2,3);
 boolean deleteAllSMSisActive = false;
 String gsmResponseMessage = "";
+//TODO get userNumber on sim phonebook
 String userNumber = "09352983630";
 String userPassword = "123456";
 int smsCount = 0;
@@ -54,29 +55,23 @@ void loop() {
                 //TODO Test if condition should runs once          
                 Serial.println("Should see this once.");
                 if(starterRelayIsOff) {
-                        Serial.print("Scanning Finger Print: ");
-                        scanFingerPrint();         
+                        scanFingerPrint();
+                        checkFingerPrint();                    
                 }                
         } else {
-                if(checkFingerPrint() && starterRelayIsOff) {
-                        Serial.println("PASSED");
-                        digitalWrite(starterRelay, HIGH);
-                }
+                if(activeAddUserFingerPrint && starterRelayIsOff) {
+                        addUserFingerPrint();
+                        checkFingerPrint();                        
+                        activeAddUserFingerPrint = false;                
+                }    
                 
-                if(!checkFingerPrint()) {
-                        if(enrollIsActive) {
-                                delay(5000);
-                                digitalWrite(starterRelay, HIGH);
-                                starterRelayIsOff = false;
-                                enrollFingerPrint();
-                                enrollIsActive = false;                
-                        }          
-                        if(deleteIsActive) {
-                                deleteAllFingerPrint();                  
-                                deleteIsActive = false;
-                                enrollIsActive = true;
-                        }                
-                }
+                if(activeDeleteUserFingerPrint && starterRelayIsOff) {
+                        deleteAllFingerPrint();
+                        receiveResponsePacket();
+                        clearResponsePacket();         
+                        activeDeleteUserFingerPrint = false;
+                        activeAddUserFingerPrint = true;
+                }                
              
                 if(deleteAllSMSisActive) {
                         deleteAllSMS();
@@ -263,7 +258,7 @@ void clearPacket(byte *packet) {
 }
 
 void scanFingerPrint() {
-        enrollIsActive = false;
+        Serial.print("Scanning finger print");  
 	clearPacket(fpShieldCommandPacket);
 	fpShieldCommandPacket[0] = 0x55;
  	fpShieldCommandPacket[1] = 0xAA;
@@ -272,11 +267,13 @@ void scanFingerPrint() {
 
 	sendCommandPacket();
         delay(500);       
+        Serial.println(".");       
 }
 
 void sendCommandPacket() {
 	getCheckSum();
 	Serial.write(fpShieldCommandPacket,24);
+        Serial.print(".");
 }
 
 void getCheckSum() {
@@ -287,23 +284,24 @@ void getCheckSum() {
 	}
 	fpShieldCommandPacket[22] = checkSum & 0xFF;
 	fpShieldCommandPacket[23] = (checkSum - (checkSum & 0xFF))/256;
+        Serial.print(".");
 }
 
-boolean receiveResponsePacket() {
-        boolean isAvailable = false;
+void receiveResponsePacket() {
 	int i = 0;
+        Serial.println("\n\nReceiving response packet");
 	while(Serial.available()>0) {
 		fpShieldResponsePacket[i] = Serial.read();
                 Serial.print(i);
                 Serial.print("-----");
                 Serial.println(fpShieldResponsePacket[i]);
 		i++;
-                isAvailable = true;
 	}
-        return isAvailable;
+        Serial.println("Complete\n\n");
 }
 
 void deleteAllFingerPrint() {
+        Serial.print("Deleting all user finger print");
         clearPacket(fpShieldCommandPacket);
         fpShieldCommandPacket[0] = 0x55;
         fpShieldCommandPacket[1] = 0xAA;
@@ -312,6 +310,7 @@ void deleteAllFingerPrint() {
         
         sendCommandPacket();
         delay(500);
+        Serial.println(".");         
 }
 
 void addUserFingerPrint() {
@@ -328,6 +327,7 @@ void addUserFingerPrint() {
         
         sendCommandPacket();
         delay(500);
+        Serial.println(".");         
 }
 
 void readDTMF() {
