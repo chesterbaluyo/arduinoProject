@@ -25,8 +25,8 @@ float dMags[8];
 /* Sensors and Switches */
 int dtmfSensor = A0;
 int starterRelay = 6;
-int fpSwitch = 7;
-int fpSwitchOn = 0;
+boolean starterRelayIsOff = true;
+int engineSwitch = 7;
 int speedMeter = 8;
 int leftSwitch = 9;
 int rightSwitch = 10;
@@ -47,44 +47,61 @@ void setup() {
         delay(500);
         setLoudnessToMax();
         delay(500);
-        readFingerPrint();        			
 }
 
-void loop() { 
-        if(!initializeFingerPrint()) {
-                if(enrollIsActive) {
-                        delay(5000);
-                        digitalWrite(starterRelay, HIGH);
-                        enrollFingerPrint();
-                        enrollIsActive = false;                
-                }          
-                if(deleteIsActive) {
-                        deleteAllFingerPrint();                  
-                        deleteIsActive = false;
-                        enrollIsActive = true;
+void loop() {
+
+        if(digitalRead(engineSwitch)) {
+                //TODO Test if condition should runs once          
+                Serial.println("Should see this once.");
+                if(starterRelayIsOff) {
+                        Serial.print("Scanning Finger Print: ");
+                        scanFingerPrint();         
                 }                
-        }
-     
-        if(deleteAllSMSisActive) {
-                deleteAllSMS();
-                deleteAllSMSisActive = false;
-        }
-        
-        gsm.listen();
-        gsmSMSListener();        
+        } else {
+                if(checkFingerPrint() && starterRelayIsOff) {
+                        Serial.println("PASSED");
+                        digitalWrite(starterRelay, HIGH);
+                }
+                
+                if(!checkFingerPrint()) {
+                        if(enrollIsActive) {
+                                delay(5000);
+                                digitalWrite(starterRelay, HIGH);
+                                starterRelayIsOff = false;
+                                enrollFingerPrint();
+                                enrollIsActive = false;                
+                        }          
+                        if(deleteIsActive) {
+                                deleteAllFingerPrint();                  
+                                deleteIsActive = false;
+                                enrollIsActive = true;
+                        }                
+                }
+             
+                if(deleteAllSMSisActive) {
+                        deleteAllSMS();
+                        deleteAllSMSisActive = false;
+                }    
+                
+                gsm.listen();
+                gsmSMSListener();              
+        }   
         
         //TODO if incoming call is available do readDTMF().
         readDTMF();        
 }
 
 void initializePin() {
+        Serial.print("Initialize Sensors and Switches: ");
         pinMode(starterRelay, OUTPUT);
-        pinMode(fpSwitch, INPUT);
+        pinMode(engineSwitch, INPUT);
         pinMode(speedMeter, INPUT);
         pinMode(leftSwitch, INPUT);
         pinMode(rightSwitch, INPUT);
         
         digitalWrite(starterRelay, LOW);  
+        Serial.println("Done");        
 }
 
 void initializeGSM() {
@@ -196,6 +213,7 @@ void readSMSCommand() {
           }
           if(command == "OVERRIDE" && password == userPassword) {
                   digitalWrite(starterRelay, HIGH);
+                  starterRelayIsOff = false;
                   sendSMSAlert("Engine Start.");                  
           }
           if(command == "RENEW" && password == userPassword) {
@@ -217,17 +235,16 @@ void sendSMSAlert(String message) {
           delay(90);
 }
 
-boolean initializeFingerPrint() {
-        boolean isActive = false;
-        if(receiveResponsePacket()) {  
-                    if((fpShieldResponsePacket[9] == 1)&& !enrollIsActive) {
-         	            digitalWrite(starterRelay, HIGH);
-        	    }
-                    deleteAllSMSisActive = true;        
-        	    clearPacket(fpShieldResponsePacket);
-                    isActive = true;
-        }      
-        return isActive;
+boolean checkFingerPrint() {
+      receiveResponsePacket();  
+      if((fpShieldResponsePacket[9] == 1)) { 
+              starterRelayIsOff = false;
+              clearPacket(fpShieldResponsePacket);
+              return true;              
+      }        
+      Serial.println("FAILED. Please try again.");
+      clearPacket(fpShieldResponsePacket);
+      return false;
 }
 
 void clearPacket(byte *packet) {
@@ -236,7 +253,7 @@ void clearPacket(byte *packet) {
 	}
 }
 
-void readFingerPrint() {
+void scanFingerPrint() {
         enrollIsActive = false;
 	clearPacket(fpShieldCommandPacket);
 	fpShieldCommandPacket[0] = 0x55;
