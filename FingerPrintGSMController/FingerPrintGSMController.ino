@@ -67,8 +67,6 @@ void loop() {
                 
                 if(activeDeleteUserFingerPrint && starterRelayIsOff) {
                         deleteAllFingerPrint();
-                        receiveResponsePacket();
-                        clearResponsePacket();         
                         activeDeleteUserFingerPrint = false;
                         activeAddUserFingerPrint = true;
                 }                
@@ -203,11 +201,11 @@ void readSMSCommand() {
         
         if(command == "STOP" && password == userPassword) {
                 switchOnStarterRelay(false);
-                sendSMSAlert("\n\nEngine stop.\n\n");          
+                sendSMSAlert("\n\nEngine STOP.\n\n");          
         }
         if(command == "OVERRIDE" && password == userPassword) {
                 switchOnStarterRelay(true);
-                sendSMSAlert("\n\nIgnition is on.\n\n");                  
+                sendSMSAlert("\n\nIgnition is ON.\n\n");                  
         }
         if(command == "RENEW" && password == userPassword) {          
                 activeDeleteUserFingerPrint = true;                  
@@ -230,11 +228,11 @@ void sendSMSAlert(String message) {
 void switchOnStarterRelay(boolean mode) {
         if(mode) {
                 //TODO make messages as a field.
-                Serial.println("\n\nIgnition is on.\n\n");
+                Serial.println("\n\nIgnition is ON.\n\n");
                 starterRelayIsOff = false;
                 digitalWrite(starterRelay, HIGH);        
         } else {
-                Serial.println("\n\nEngine stop.\n\n");
+                Serial.println("\n\nEngine STOP.\n\n");
                 starterRelayIsOff = true;
                 digitalWrite(starterRelay, LOW);         
         }
@@ -246,7 +244,7 @@ void checkFingerPrint() {
                 Serial.println("Finger print PASSED.\n\n");
                 switchOnStarterRelay(true);            
         } else {
-                Serial.println("Finger print FAILED. Please try again. ---\n\n");      
+                Serial.println("Finger print FAILED. Please try again.\n\n");      
         }        
         clearPacket(fpShieldResponsePacket);            
 }
@@ -311,6 +309,9 @@ void deleteAllFingerPrint() {
         sendCommandPacket();
         delay(500);
         Serial.println(".");         
+        receiveResponsePacket();
+        clearPacket(fpShieldResponsePacket);
+        Serial.println("Done\n\n");        
 }
 
 void addUserFingerPrint() {
