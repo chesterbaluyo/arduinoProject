@@ -207,17 +207,15 @@ void readSMSCommand() {
         password = sms.substring(smsIndexLocation+1,smsIndexLocation+7);       
         
         if(command == "STOP" && password == userPassword) {
-                digitalWrite(starterRelay, LOW);
-                sendSMSAlert("Engine is stop.");          
+                switchOnStarterRelay(false);
+                sendSMSAlert("\n\nEngine stop.\n\n");          
         }
         if(command == "OVERRIDE" && password == userPassword) {
-                digitalWrite(starterRelay, HIGH);
-                starterRelayIsOff = false;
-                sendSMSAlert("Engine Start.");                  
+                switchOnStarterRelay(true);
+                sendSMSAlert("\n\nIgnition is on.\n\n");                  
         }
-        if(command == "RENEW" && password == userPassword) {
-                digitalWrite(starterRelay, LOW);           
-                deleteIsActive = true;                  
+        if(command == "RENEW" && password == userPassword) {          
+                activeDeleteUserFingerPrint = true;                  
         }        
 }
 
@@ -234,19 +232,31 @@ void sendSMSAlert(String message) {
         delay(90);
 }
 
-boolean checkFingerPrint() {
+void switchOnStarterRelay(boolean mode) {
+        if(mode) {
+                //TODO make messages as a field.
+                Serial.println("\n\nIgnition is on.\n\n");
+                starterRelayIsOff = false;
+                digitalWrite(starterRelay, HIGH);        
+        } else {
+                Serial.println("\n\nEngine stop.\n\n");
+                starterRelayIsOff = true;
+                digitalWrite(starterRelay, LOW);         
+        }
+}
+
+void checkFingerPrint() {
         receiveResponsePacket();  
         if((fpShieldResponsePacket[9] == 1)) { 
-                starterRelayIsOff = false;
-                clearPacket(fpShieldResponsePacket);
-                return true;              
+                Serial.println("Finger print PASSED.\n\n");
+                switchOnStarterRelay(true);            
+        } else {
+                Serial.println("Finger print FAILED. Please try again. ---\n\n");      
         }        
-        Serial.println("FAILED. Please try again.");
-        clearPacket(fpShieldResponsePacket);
-        return false;
-  }
+        clearPacket(fpShieldResponsePacket);            
+}
   
-  void clearPacket(byte *packet) {
+void clearPacket(byte *packet) {
   	for(int i=0; i<=50; i++) {
   		packet[i] = 0x00;	
   	}
