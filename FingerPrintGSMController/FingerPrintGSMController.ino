@@ -4,8 +4,8 @@
 /* FingerPrint Shield */ 
 byte fpShieldCommandPacket[24];
 byte fpShieldResponsePacket[48];
-boolean enrollIsActive = false;
-boolean deleteIsActive = false;
+boolean activeAddUserFingerPrint = false;
+boolean activeDeleteUserFingerPrint = false;
 
 /* GSM Shield */
 SoftwareSerial gsm(2,3);
@@ -26,7 +26,7 @@ float dMags[8];
 int dtmfSensor = A0;
 int starterRelay = 6;
 boolean starterRelayIsOff = true;
-int engineSwitch = 7;
+int ignitionSwitch = 7;
 int speedMeter = 8;
 int leftSwitch = 9;
 int rightSwitch = 10;
@@ -50,7 +50,7 @@ void setup() {
 }
 
 void loop() {
-        if(digitalRead(engineSwitch)) {
+        if(digitalRead(ignitionSwitch)) {
                 //TODO Test if condition should runs once          
                 Serial.println("Should see this once.");
                 if(starterRelayIsOff) {
@@ -94,7 +94,7 @@ void loop() {
 void initializePin() {
         Serial.print("Initialize Sensors and Switches: ");
         pinMode(starterRelay, OUTPUT);
-        pinMode(engineSwitch, INPUT);
+        pinMode(ignitionSwitch, INPUT);
         pinMode(speedMeter, INPUT);
         pinMode(leftSwitch, INPUT);
         pinMode(rightSwitch, INPUT);
@@ -304,8 +304,8 @@ void deleteAllFingerPrint() {
         delay(500);
 }
 
-void enrollFingerPrint() {
-        enrollIsActive = true;
+void addUserFingerPrint() {
+        Serial.print("Add user finger print");
         clearPacket(fpShieldCommandPacket);
         fpShieldCommandPacket[0] = 0x55;
         fpShieldCommandPacket[1] = 0xAA;
