@@ -10,7 +10,6 @@ boolean activeDeleteUserFingerPrint = false;
 /* GSM Shield */
 SoftwareSerial gsm(2,3);
 boolean deleteAllSMSisActive = false;
-String gsmResponseMessage = "";
 //TODO get userNumber on sim phonebook
 String userNumber = "09352983630";
 String userPassword = "123456";
@@ -134,26 +133,23 @@ void setLoudnessToMax() {
         clearGsmResponseMessage();          
 }
 
-void gsmSMSListener() {
-        if(receiveGSMResponse()) {
-              if(gsmResponseMessage.substring(2,6)=="+CMT"){
-                      readSMSCommand();                        
-                      smsCount++;
-                      if(smsCount >= 15) {
-                              deleteAllSMS();
-                              smsCount = 0;
-                      }
-              }
-              clearGsmResponseMessage();    
-        }      
+void gsmSMSListener() {  
+        String gsmResponseMessage = receiveGSMResponse();
+        
+        if(gsmResponseMessage.substring(2,6)=="+CMT"){
+                readSMSCommand(gsmResponseMessage);                        
+                deleteAllSMS();                   
+        }
 }
 
 void sendATCommand(String atCommand) {          
         gsm.println(atCommand);
 }
 
-boolean receiveGSMResponse() {
+String receiveGSMResponse() {
         boolean isAvailable = false;
+        //TODO check diff between String message = "" to message = String("")
+        String gsmResponseMessage = "";
         
         while(gsm.available()>0) {
                 char incomingData = '\0';
@@ -168,11 +164,8 @@ boolean receiveGSMResponse() {
         else {
                 Serial.println("*** GSM connection failed! ***");
         } 
-        return isAvailable;
-}
-
-void clearGsmResponseMessage() {
-        gsmResponseMessage = String("");
+        
+        return gsmResponseMessage;
 }
 
 void deleteAllSMS() {
@@ -186,7 +179,7 @@ void deleteAllSMS() {
         }
 }
 
-void readSMSCommand() {
+void readSMSCommand(String gsmResponseMessage) {
         int smsIndexLocation = 0;
         String command;
         String password;
