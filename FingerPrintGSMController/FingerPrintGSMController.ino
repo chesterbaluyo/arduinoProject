@@ -9,11 +9,9 @@ boolean activeDeleteUserFingerPrint = false;
 
 /* GSM Shield */
 SoftwareSerial gsm(2,3);
-boolean deleteAllSMSisActive = false;
 //TODO get userNumber on sim phonebook
 String userNumber = "09352983630";
 String userPassword = "123456";
-int smsCount = 0;
 
 /* DTMF Decoder */
 float n = 128.0;
@@ -47,6 +45,8 @@ void setup() {
         delay(500);
         setLoudnessToMax();
         delay(500);
+        deleteAllSMS();
+        delay(500);
 }
 
 void loop() {
@@ -54,16 +54,13 @@ void loop() {
                 //TODO Test if condition should runs once          
                 Serial.println("Should see this once.");
                 if(starterRelayIsOff && (!activeAddUserFingerPrint || !activeDeleteUserFingerPrint)) {
-                        scanFingerPrint();
-                        //TODO Add while loop to catch finger print response packet.
-                        checkFingerPrint();                    
+                        scanFingerPrint();                  
                 }                
         } else {
+                checkFingerPrint();
                 //TODO this should be inside readSMSCommand since it completes communication with the finger print shield. 
                 if(activeAddUserFingerPrint && starterRelayIsOff) {
-                        addUserFingerPrint();
-                        //TODO Add while loop to catch finger print response packet.
-                        checkFingerPrint();                        
+                        addUserFingerPrint();                                                
                         activeAddUserFingerPrint = false;                
                 }    
                 
@@ -71,19 +68,11 @@ void loop() {
                         deleteAllFingerPrint();
                         activeDeleteUserFingerPrint = false;
                         activeAddUserFingerPrint = true;
-                }                
-             
-                if(deleteAllSMSisActive) {
-                        deleteAllSMS();
-                        deleteAllSMSisActive = false;
-                }    
+                }                             
                 
                 gsm.listen();
-                gsmSMSListener();              
-        }   
-        
-        //TODO if incoming call is available do readDTMF().
-        readDTMF();        
+                gsmCallAndSMSListener();              
+        }          
 }
 
 void initializePin() {
@@ -101,44 +90,43 @@ void initializePin() {
 void initializeGSM() {
         Serial.print("Initialize GSM: ");  
         sendATCommand("AT");
-        receiveGSMResponse();
-        clearGsmResponseMessage();                    
+        receiveGSMResponse();                  
 }
 
 void setSMSMessageFormat() {
         Serial.print("Set SMS message format: ");  
         sendATCommand("AT+CMGF=1");
         receiveGSMResponse();
-        clearGsmResponseMessage();
 }
 
 void enableAutomaticAnswer() {
         Serial.print("Enable automatic answering: ");  
         sendATCommand("ATS0=1");
         receiveGSMResponse();
-        clearGsmResponseMessage();
 }
 
 void enableLoudSpeaker() {
         Serial.print("Loud speaker mode: ");   
         sendATCommand("ATM9"); 
         receiveGSMResponse();
-        clearGsmResponseMessage();
 }
 
 void setLoudnessToMax() {
         Serial.print("Set maximum loudness: ");   
         sendATCommand("ATL9");
-        receiveGSMResponse();
-        clearGsmResponseMessage();          
+        receiveGSMResponse();          
 }
 
-void gsmSMSListener() {  
+void gsmCallAndSMSListener() {  
         String gsmResponseMessage = receiveGSMResponse();
         
         if(gsmResponseMessage.substring(2,6)=="+CMT"){
                 readSMSCommand(gsmResponseMessage);                        
                 deleteAllSMS();                   
+        }
+        else if (gsmResponseMessage.substring(2,6)=="+CTI") {
+        //TODO check if correct gsm response when incoming call is indicated
+                readDTMFCommand(getDTMF());        
         }
 }
 
@@ -171,12 +159,9 @@ String receiveGSMResponse() {
 void deleteAllSMS() {
         //TODO use option <delflag> to delete all messages from sim
         //ex: AT+CMGD=1,4
-        for(int i=1;i<=15;i++) {
-                String atCommand = "AT+CMGD=";
-                atCommand += i;
-                sendATCommand(atCommand);
-                delay(1000);
-        }
+        String atCommand = "AT+CMGD=1,4";
+        sendATCommand(atCommand);
+        delay(1000);
 }
 
 void readSMSCommand(String gsmResponseMessage) {
@@ -211,14 +196,15 @@ void readSMSCommand(String gsmResponseMessage) {
 }
 
 void sendSMSAlert(String message) {
-        char ctl_z = 0x1A;
+        //TODO is this the same with "\37"
+        char controlZ = 0x1A;
         String atCommand = "AT+CMGS= \"";
         
         atCommand += userNumber + "\"";
         sendATCommand(atCommand);
         delay(300);
         
-        atCommand = message + ctl_z;
+        atCommand = message + controlZ;
         sendATCommand(atCommand);
         delay(90);
 }
@@ -306,10 +292,7 @@ void deleteAllFingerPrint() {
         
         sendCommandPacket();
         delay(500);
-        Serial.println(".");
-        //TODO Add while loop to catch finger print response packet.        
-        receiveResponsePacket();
-        clearPacket(fpShieldResponsePacket);
+        Serial.println(".");        
         Serial.println("Done\n\n");        
 }
 
@@ -330,21 +313,27 @@ void addUserFingerPrint() {
         Serial.println(".");         
 }
 
-void readDTMF() {
+String getDTMF() {
         Serial.print("DTMF: ");
+        String dmtfCommand = "";
         char thisChar;
         dtmf.sample(dtmfSensor);
         dtmf.detect(dMags, 506);
         thisChar = dtmf.button(dMags, 1800.);
         if(thisChar) {
                 Serial.print(thisChar);
+                
                 noCharCount = 0;
         } else {
-                if(++noCharCount == 50) {
+                if(noCharCount++ == 50) {
                         Serial.println("");
                 }
                 if(noCharCount > 30000) {
                         noCharCount = 51;
                 }
         }
+        
+        return 
 }
+
+void 
