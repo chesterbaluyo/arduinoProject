@@ -54,13 +54,16 @@ void loop() {
         if(digitalRead(ignitionSwitch)) {
                 //TODO Test if condition should runs once          
                 Serial.println("Should see this once.");
-                if(starterRelayIsOff) {
+                if(starterRelayIsOff && (!activeAddUserFingerPrint || !activeDeleteUserFingerPrint)) {
                         scanFingerPrint();
+                        //TODO Add while loop to catch finger print response packet.
                         checkFingerPrint();                    
                 }                
         } else {
+                //TODO this should be inside readSMSCommand since it completes communication with the finger print shield. 
                 if(activeAddUserFingerPrint && starterRelayIsOff) {
                         addUserFingerPrint();
+                        //TODO Add while loop to catch finger print response packet.
                         checkFingerPrint();                        
                         activeAddUserFingerPrint = false;                
                 }    
@@ -173,6 +176,8 @@ void clearGsmResponseMessage() {
 }
 
 void deleteAllSMS() {
+        //TODO use option <delflag> to delete all messages from sim
+        //ex: AT+CMGD=1,4
         for(int i=1;i<=15;i++) {
                 String atCommand = "AT+CMGD=";
                 atCommand += i;
@@ -308,7 +313,8 @@ void deleteAllFingerPrint() {
         
         sendCommandPacket();
         delay(500);
-        Serial.println(".");         
+        Serial.println(".");
+        //TODO Add while loop to catch finger print response packet.        
         receiveResponsePacket();
         clearPacket(fpShieldResponsePacket);
         Serial.println("Done\n\n");        
