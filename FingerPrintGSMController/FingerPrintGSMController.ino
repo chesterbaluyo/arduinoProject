@@ -17,7 +17,6 @@ String userPassword = "123456";
 float n = 128.0;
 float samplingRate = 8926.0;
 DTMF dtmf = DTMF(n, samplingRate);
-int noCharCount = 0;
 float dMags[8];
 
 /* Sensors and Switches */
@@ -313,27 +312,30 @@ void addUserFingerPrint() {
         Serial.println(".");         
 }
 
-String getDTMF() {
+char getDTMF() {
         Serial.print("DTMF: ");
         String dmtfCommand = "";
-        char thisChar;
+        char thisChar = '\0';
         dtmf.sample(dtmfSensor);
         dtmf.detect(dMags, 506);
         thisChar = dtmf.button(dMags, 1800.);
         if(thisChar) {
-                Serial.print(thisChar);
-                
-                noCharCount = 0;
-        } else {
-                if(noCharCount++ == 50) {
-                        Serial.println("");
-                }
-                if(noCharCount > 30000) {
-                        noCharCount = 51;
-                }
+                Serial.print(thisChar);                
         }
         
-        return 
+        return thisChar;      
 }
 
-void 
+void readDTMFCommand() {
+        int index = 0;
+        String dtmfCode = "";
+        
+        while(index < userPassword.length()) {
+            dtmfCode += getDTMF();
+            index++;            
+        }
+        
+        if(dtmfCode == userPassword) {
+            switchOnStarterRelay(false);
+        }
+}
