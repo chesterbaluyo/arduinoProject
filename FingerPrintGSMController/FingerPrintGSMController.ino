@@ -70,7 +70,8 @@ void loop() {
                 }                             
                 
                 gsm.listen();
-                gsmCallAndSMSListener();              
+                gsmCallAndSMSListener();
+                getDirection();              
         }          
 }
 
@@ -125,7 +126,7 @@ void gsmCallAndSMSListener() {
         }
         else if (gsmResponseMessage.substring(2,6)=="+CTI") {
         //TODO check if correct gsm response when incoming call is indicated
-                readDTMFCommand(getDTMF());        
+                readDTMFCommand();        
         }
 }
 
@@ -195,16 +196,20 @@ void readSMSCommand(String gsmResponseMessage) {
 }
 
 void sendSMSAlert(String message) {
+        //TODO test delay time of sending sms
+        Serial.println("Sending SMS...");
         //TODO is this the same with "\37"
         char controlZ = 0x1A;
         String atCommand = "AT+CMGS= \"";
         
         atCommand += userNumber + "\"";
         sendATCommand(atCommand);
-        delay(300);
+        delay(90);
         
         atCommand = message + controlZ;
         sendATCommand(atCommand);
+        //TODO study error handling when message was not sent.
+        Serial.println("Message sent!");
         delay(90);
 }
 
@@ -337,5 +342,28 @@ void readDTMFCommand() {
         
         if(dtmfCode == userPassword) {
             switchOnStarterRelay(false);
+        }
+}
+
+String locationMessage;
+void getDirection() {
+        float motorSpeed = Serial.read(speedMeter);
+        float leftBearing = Serial.read(leftSwitch);
+        float rightBearing = Serial.read(rightSwith);
+        
+        if(motorSpeed) {
+            locationMessage += "Speed: "+motorSpeed;
+            
+            if(leftBearing) {
+                locationMessage += "Left: "+leftBearing;
+            } else if(rightBearing) {
+                locationMessage += "Right: "+rightBearing;
+            } else {
+                locationMessage += "Straight ahead";
+            }
+            
+            locationMessage += "\n";
+            
+            
         }
 }
