@@ -363,6 +363,7 @@ void getDirection() {
                 locationMessage += "Straight ahead";
             }
             //TODO add time lapse when changing directions or speed
+            //use AT+CLTS to get time stamp.
             locationMessage += "\n";
         }
 }
