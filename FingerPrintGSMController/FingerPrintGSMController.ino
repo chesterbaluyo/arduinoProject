@@ -184,7 +184,8 @@ void readSMSCommand(String gsmResponseMessage) {
         
         if(command == "STOP" && password == userPassword) {
                 switchOnStarterRelay(false);
-                sendSMSAlert("\n\nEngine STOP.\n\n");          
+                sendSMSAlert("\n\nEngine STOP.\n\n");
+                sendLocation();          
         }
         if(command == "OVERRIDE" && password == userPassword) {
                 switchOnStarterRelay(true);
@@ -361,9 +362,16 @@ void getDirection() {
             } else {
                 locationMessage += "Straight ahead";
             }
-            
+            //TODO add time lapse when changing directions or speed
             locationMessage += "\n";
-            
-            
         }
+}
+
+void sendLocation() {
+        int i;
+        for(i = 150; i < locationMessage.length(); i+=150) {
+              sendSMSAlert(locationMessage.substringOf(i));          
+        }
+        
+        sendSMSAlert(locationMessage.substringOf(i));
 }
