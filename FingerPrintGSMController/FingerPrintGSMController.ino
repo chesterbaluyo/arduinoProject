@@ -71,7 +71,10 @@ void loop() {
                 
                 gsm.listen();
                 gsmCallAndSMSListener();
-                getDirection();              
+                
+                if(!starterRelayIsOff) {
+                    getDirection();                
+                }              
         }          
 }
 
@@ -348,31 +351,33 @@ void readDTMFCommand() {
 
 String locationMessage;
 void getDirection() {
-        float motorSpeed = Serial.read(speedMeter);
-        float leftBearing = Serial.read(leftSwitch);
-        float rightBearing = Serial.read(rightSwith);
+        int motorSpeed = analogRead(speedMeter);
+        int leftBearing = analogRead(leftSwitch);
+        int rightBearing = analogRead(rightSwitch);
         
-        if(motorSpeed) {
-            locationMessage += "Speed: "+motorSpeed;
-            
-            if(leftBearing) {
-                locationMessage += "Left: "+leftBearing;
-            } else if(rightBearing) {
-                locationMessage += "Right: "+rightBearing;
-            } else {
-                locationMessage += "Straight ahead";
-            }
-            //TODO add time lapse when changing directions or speed
-            //use AT+CLTS to get time stamp.
-            locationMessage += "\n";
+        locationMessage += "Speed: "+motorSpeed;
+        
+        if(leftBearing) {
+            locationMessage += "Left: "+leftBearing;
+        } else if(rightBearing) {
+            locationMessage += "Right: "+rightBearing;
+        } else {
+            locationMessage += "Straight ahead";
         }
+        //TODO add time lapse when changing directions or speed
+        //use AT+CLTS to get time stamp.
+        sendATCommand("AT+CLS");
+        locationMessage += receiveGSMResponse();
+        locationMessage += "\n\n";
 }
 
 void sendLocation() {
-        int i;
-        for(i = 150; i < locationMessage.length(); i+=150) {
-              sendSMSAlert(locationMessage.substringOf(i));          
+        int SMS_MAX_LENGHT = 150;
+        int index = 0;
+        while(index < locationMessage.length()) {
+            sendSMSAlert(locationMessage.substring(index, index + SMS_MAX_LENGHT)); 
+            index += (SMS_MAX_LENGHT + 1);         
         }
-        
-        sendSMSAlert(locationMessage.substringOf(i));
+         
+        sendSMSAlert(locationMessage.substring(index));
 }
