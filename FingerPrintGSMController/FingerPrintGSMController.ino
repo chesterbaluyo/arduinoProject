@@ -2,6 +2,7 @@
 
 
 SoftwareSerial gsm(2,3);
+SoftwareSerial fingerPrint(10,11);
 
 byte fpShieldCommandPacket[24];
 byte fpShieldResponsePacket[48];
@@ -22,6 +23,7 @@ int rightSwitch = 10;
 
 void setup() {
         gsm.begin(9600);
+        fingerPrint(115200);
 	Serial.begin(115200);
 
         initializePin();
@@ -30,7 +32,8 @@ void setup() {
         readFingerPrint();        			
 }
 
-void loop() { 
+void loop() {
+        fingerPrint.listen(); 
         if(!initializeFingerPrint()) {
                 if(enrollIsActive) {
                         delay(5000);
@@ -199,7 +202,7 @@ void readFingerPrint() {
 
 void sendCommandPacket() {
 	getCheckSum();
-	Serial.write(fpShieldCommandPacket,24);
+	fingerPrint.write(fpShieldCommandPacket,24);
 }
 
 void getCheckSum() {
@@ -215,8 +218,8 @@ void getCheckSum() {
 boolean receiveResponsePacket() {
         boolean isAvailable = false;
 	int i = 0;
-	while(Serial.available()>0) {
-		fpShieldResponsePacket[i] = Serial.read();
+	while(fingerPrint.available()>0) {
+		fpShieldResponsePacket[i] = fingerPrint.read();
                 Serial.print(i);
                 Serial.print("-----");
                 Serial.println(fpShieldResponsePacket[i]);
