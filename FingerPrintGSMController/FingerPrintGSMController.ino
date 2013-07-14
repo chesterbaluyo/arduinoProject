@@ -24,9 +24,9 @@ int dtmfSensor = A0;
 int starterRelay = 6;
 boolean starterRelayIsOff = true;
 int ignitionSwitch = 7;
-int speedMeter = 8;
-int leftSwitch = 9;
-int rightSwitch = 10;
+int speedMeter = A1;
+int leftSwitch = A2;
+int rightSwitch = A3;
 
 void setup() {
         gsm.begin(9600);
@@ -49,12 +49,12 @@ void setup() {
 }
 
 void loop() {
-        if(digitalRead(ignitionSwitch)) {
+        if(digitalRead(ignitionSwitch) == LOW) {
                 //TODO Test if condition should runs once          
-                Serial.println("Should see this once.");
+                Serial.println("Should see this once.");                
                 if(starterRelayIsOff && (!activeAddUserFingerPrint || !activeDeleteUserFingerPrint)) {
                         scanFingerPrint();                  
-                }                
+                }
         } else {
                 checkFingerPrint();
                 //TODO this should be inside readSMSCommand since it completes communication with the finger print shield. 
@@ -74,7 +74,7 @@ void loop() {
                 
                 if(!starterRelayIsOff) {
                     getDirection();                
-                }              
+                }  
         }          
 }
 
@@ -82,9 +82,6 @@ void initializePin() {
         Serial.print("Initialize Sensors and Switches: ");
         pinMode(starterRelay, OUTPUT);
         pinMode(ignitionSwitch, INPUT);
-        pinMode(speedMeter, INPUT);
-        pinMode(leftSwitch, INPUT);
-        pinMode(rightSwitch, INPUT);
         
         digitalWrite(starterRelay, LOW);  
         Serial.println("Done");        
@@ -369,6 +366,7 @@ void getDirection() {
         sendATCommand("AT+CLS");
         locationMessage += receiveGSMResponse();
         locationMessage += "\n\n";
+        Serial.println(locationMessage);
 }
 
 void sendLocation() {
@@ -380,4 +378,5 @@ void sendLocation() {
         }
          
         sendSMSAlert(locationMessage.substring(index));
+        locationMessage = String("");
 }
