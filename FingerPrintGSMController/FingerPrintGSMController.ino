@@ -1,7 +1,8 @@
 #include <SoftwareSerial.h>
 #include <DTMF.h>
 
-/* FingerPrint Shield */ 
+/* FingerPrint Shield */
+SoftwareSerial fingerPrint(10, 11);
 byte fpShieldCommandPacket[24];
 byte fpShieldResponsePacket[48];
 boolean activeAddUserFingerPrint = false;
@@ -30,6 +31,7 @@ int rightSwitch = A3;
 
 void setup() {
         gsm.begin(9600);
+        fingerPrint.begin(115200);
 	Serial.begin(115200);
 
         initializePin();
@@ -45,7 +47,7 @@ void setup() {
         setLoudnessToMax();
         delay(500);
         deleteAllSMS();
-        delay(500);
+        delay(500);        
 }
 
 void loop() {
@@ -53,10 +55,22 @@ void loop() {
                 //TODO Test if condition should runs once          
                 Serial.println("Should see this once.");                
                 if(starterRelayIsOff && (!activeAddUserFingerPrint || !activeDeleteUserFingerPrint)) {
-                        scanFingerPrint();                  
+                        scanFingerPrint();
+                        //add delay to read fingerPrint response
+                        delay(500);
+                        checkFingerPrint();
+                               delay(500);
+                        checkFingerPrint();
+                               delay(500);
+                        checkFingerPrint();
+                               delay(500);
+                        checkFingerPrint();
+                         delay(500);
+                        checkFingerPrint(); 
+                        //turn fingerPrint led off                
                 }
         } else {
-                checkFingerPrint();
+                /*checkFingerPrint();
                 //TODO this should be inside readSMSCommand since it completes communication with the finger print shield. 
                 if(activeAddUserFingerPrint && starterRelayIsOff) {
                         addUserFingerPrint();                                                
@@ -68,13 +82,12 @@ void loop() {
                         activeDeleteUserFingerPrint = false;
                         activeAddUserFingerPrint = true;
                 }                             
-                
-                gsm.listen();
+                */
                 gsmCallAndSMSListener();
                 
                 if(!starterRelayIsOff) {
                     getDirection();                
-                }  
+                }
         }          
 }
 
@@ -138,7 +151,7 @@ String receiveGSMResponse() {
         boolean isAvailable = false;
         //TODO check diff between String message = "" to message = String("")
         String gsmResponseMessage = "";
-        
+        gsm.listen();
         while(gsm.available()>0) {
                 char incomingData = '\0';
                 incomingData = gsm.read(); 
@@ -149,9 +162,6 @@ String receiveGSMResponse() {
         if(isAvailable) {
                 Serial.println(gsmResponseMessage);          
         }
-        else {
-                Serial.println("*** GSM connection failed! ***");
-        } 
         
         return gsmResponseMessage;
 }
@@ -228,13 +238,11 @@ void switchOnStarterRelay(boolean mode) {
 }
 
 void checkFingerPrint() {
-        receiveResponsePacket();  
+        getResponsePacket();  
         if((fpShieldResponsePacket[9] == 1)) { 
                 Serial.println("Finger print PASSED.\n\n");
                 switchOnStarterRelay(true);            
-        } else {
-                Serial.println("Finger print FAILED. Please try again.\n\n");      
-        }        
+        }
         clearPacket(fpShieldResponsePacket);            
 }
   
@@ -259,7 +267,7 @@ void scanFingerPrint() {
 
 void sendCommandPacket() {
 	getCheckSum();
-	Serial.write(fpShieldCommandPacket,24);
+	fingerPrint.write(fpShieldCommandPacket,24);
         Serial.print(".");
 }
 
@@ -274,17 +282,16 @@ void getCheckSum() {
         Serial.print(".");
 }
 
-void receiveResponsePacket() {
+void getResponsePacket() {
 	int i = 0;
-        Serial.println("\n\nReceiving response packet");
-	while(Serial.available()>0) {
-		fpShieldResponsePacket[i] = Serial.read();
+        fingerPrint.listen();
+	while(fingerPrint.available()>0) {
+		fpShieldResponsePacket[i] = fingerPrint.read();
                 Serial.print(i);
                 Serial.print("-----");
                 Serial.println(fpShieldResponsePacket[i]);
 		i++;
 	}
-        Serial.println("Complete\n\n");
 }
 
 void deleteAllFingerPrint() {
@@ -347,32 +354,41 @@ void readDTMFCommand() {
 }
 
 String locationMessage;
+//add time when the engine start
 void getDirection() {
         int motorSpeed = analogRead(speedMeter);
         int leftBearing = analogRead(leftSwitch);
         int rightBearing = analogRead(rightSwitch);
         
-        locationMessage += "Speed: "+motorSpeed;
-        
+        if(motorSpeed) {
+            locationMessage += "Speed: "+motorSpeed;
+            sendATCommand("AT+CLS");
+            locationMessage += receiveGSMResponse();            
+        }
+       
         if(leftBearing) {
             locationMessage += "Left: "+leftBearing;
+            sendATCommand("AT+CLS");
+            locationMessage += receiveGSMResponse();            
         } else if(rightBearing) {
             locationMessage += "Right: "+rightBearing;
+            sendATCommand("AT+CLS");
+            locationMessage += receiveGSMResponse();            
         } else {
             locationMessage += "Straight ahead";
+            sendATCommand("AT+CLS");
+            locationMessage += receiveGSMResponse();            
         }
         //TODO add time lapse when changing directions or speed
         //use AT+CLTS to get time stamp.
-        sendATCommand("AT+CLS");
-        locationMessage += receiveGSMResponse();
         locationMessage += "\n\n";
-        Serial.println(locationMessage);
 }
 
 void sendLocation() {
         int SMS_MAX_LENGHT = 150;
         int index = 0;
         while(index < locationMessage.length()) {
+            Serial.println(locationMessage.substring(index, index + SMS_MAX_LENGHT));
             sendSMSAlert(locationMessage.substring(index, index + SMS_MAX_LENGHT)); 
             index += (SMS_MAX_LENGHT + 1);         
         }
