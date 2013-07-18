@@ -52,10 +52,8 @@ void setup() {
 
 void loop() {
         if(digitalRead(ignitionSwitch) == LOW) {        
-                Serial.println("Should see this once.");                
                 if(starterRelayIsOff && (!activeAddUserFingerPrint || !activeDeleteUserFingerPrint)) {
                         scanFingerPrint();
-                        //delay time to get packet response
                         setPacketResponseTimeOut(5000);         
                 }
         } else {
@@ -90,7 +88,7 @@ void initializePin() {
 }
 
 void initializeGSM() {
-        Serial.print("Initialize GSM: ");  
+        Serial.println("Initialize GSM: ");
         sendATCommand("AT");
         getGSMResponse();                  
 }
@@ -127,7 +125,7 @@ void gsmCallAndSMSListener() {
                 deleteAllSMS();                   
         }
         else if (gsmResponseMessage.substring(2,6)=="+CTI") {
-        //TODO check if correct gsm response when incoming call is indicated
+                //TODO check if correct gsm response when incoming call is indicated
                 readDTMFCommand();        
         }
 }
@@ -138,7 +136,6 @@ void sendATCommand(String atCommand) {
 
 String getGSMResponse() {
         boolean isAvailable = false;
-        //TODO check diff between String message = "" to message = String("")
         String gsmResponseMessage = "";
         gsm.listen();
         while(gsm.available()>0) {
@@ -156,8 +153,7 @@ String getGSMResponse() {
 }
 
 void deleteAllSMS() {
-        //TODO use option <delflag> to delete all messages from sim
-        //ex: AT+CMGD=1,4
+        Serial.println("Delete All SMS: ");
         String atCommand = "AT+CMGD=1,4";
         sendATCommand(atCommand);
         delay(1000);
