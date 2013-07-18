@@ -103,35 +103,35 @@ void initializePin() {
 void initializeGSM() {
         Serial.print("Initialize GSM: ");  
         sendATCommand("AT");
-        receiveGSMResponse();                  
+        getGSMResponse();                  
 }
 
 void setSMSMessageFormat() {
-        Serial.print("Set SMS message format: ");  
+        Serial.println("Set SMS message format: ");  
         sendATCommand("AT+CMGF=1");
-        receiveGSMResponse();
+        getGSMResponse();
 }
 
 void enableAutomaticAnswer() {
-        Serial.print("Enable automatic answering: ");  
+        Serial.println("Enable automatic answering: ");  
         sendATCommand("ATS0=1");
-        receiveGSMResponse();
+        getGSMResponse();
 }
 
 void enableLoudSpeaker() {
-        Serial.print("Loud speaker mode: ");   
+        Serial.println("Loud speaker mode: ");   
         sendATCommand("ATM9"); 
-        receiveGSMResponse();
+        getGSMResponse();
 }
 
 void setLoudnessToMax() {
-        Serial.print("Set maximum loudness: ");   
+        Serial.println("Set maximum loudness: ");   
         sendATCommand("ATL9");
-        receiveGSMResponse();          
+        getGSMResponse();          
 }
 
 void gsmCallAndSMSListener() {  
-        String gsmResponseMessage = receiveGSMResponse();
+        String gsmResponseMessage = getGSMResponse();
         
         if(gsmResponseMessage.substring(2,6)=="+CMT"){
                 readSMSCommand(gsmResponseMessage);                        
@@ -147,7 +147,7 @@ void sendATCommand(String atCommand) {
         gsm.println(atCommand);
 }
 
-String receiveGSMResponse() {
+String getGSMResponse() {
         boolean isAvailable = false;
         //TODO check diff between String message = "" to message = String("")
         String gsmResponseMessage = "";
@@ -363,21 +363,21 @@ void getDirection() {
         if(motorSpeed) {
             locationMessage += "Speed: "+motorSpeed;
             sendATCommand("AT+CLS");
-            locationMessage += receiveGSMResponse();            
+            locationMessage += getGSMResponse();            
         }
        
         if(leftBearing) {
             locationMessage += "Left: "+leftBearing;
             sendATCommand("AT+CLS");
-            locationMessage += receiveGSMResponse();            
+            locationMessage += getGSMResponse();            
         } else if(rightBearing) {
             locationMessage += "Right: "+rightBearing;
             sendATCommand("AT+CLS");
-            locationMessage += receiveGSMResponse();            
+            locationMessage += getGSMResponse();            
         } else {
             locationMessage += "Straight ahead";
             sendATCommand("AT+CLS");
-            locationMessage += receiveGSMResponse();            
+            locationMessage += getGSMResponse();            
         }
         //TODO add time lapse when changing directions or speed
         //use AT+CLTS to get time stamp.
