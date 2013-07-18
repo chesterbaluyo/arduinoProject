@@ -51,29 +51,18 @@ void setup() {
 }
 
 void loop() {
-        if(digitalRead(ignitionSwitch) == LOW) {
-                //TODO Test if condition should runs once          
+        if(digitalRead(ignitionSwitch) == LOW) {        
                 Serial.println("Should see this once.");                
                 if(starterRelayIsOff && (!activeAddUserFingerPrint || !activeDeleteUserFingerPrint)) {
                         scanFingerPrint();
-                        //add delay to read fingerPrint response
-                        delay(500);
-                        checkFingerPrint();
-                               delay(500);
-                        checkFingerPrint();
-                               delay(500);
-                        checkFingerPrint();
-                               delay(500);
-                        checkFingerPrint();
-                         delay(500);
-                        checkFingerPrint(); 
-                        //turn fingerPrint led off                
+                        //delay time to get packet response
+                        setPacketResponseTimeOut(5000);         
                 }
         } else {
-                /*checkFingerPrint();
                 //TODO this should be inside readSMSCommand since it completes communication with the finger print shield. 
                 if(activeAddUserFingerPrint && starterRelayIsOff) {
-                        addUserFingerPrint();                                                
+                        addUserFingerPrint();
+                        setPacketResponseTimeOut(10000);                        
                         activeAddUserFingerPrint = false;                
                 }    
                 
@@ -82,7 +71,7 @@ void loop() {
                         activeDeleteUserFingerPrint = false;
                         activeAddUserFingerPrint = true;
                 }                             
-                */
+                
                 gsmCallAndSMSListener();
                 
                 if(!starterRelayIsOff) {
@@ -237,49 +226,56 @@ void switchOnStarterRelay(boolean mode) {
         }
 }
 
-void checkFingerPrint() {
-        getResponsePacket();  
+void checkFingerPrint() {  
         if((fpShieldResponsePacket[9] == 1)) { 
                 Serial.println("Finger print PASSED.\n\n");
                 switchOnStarterRelay(true);            
+        } else {
+                if(getCheckSum(fpShieldResponsePacket, 48)) {
+                        Serial.println("Finger print FAILED.\n\n");                      
+                } else {
+                        Serial.println("*** Finger Print Shield not available! ***");
+                        //turn fingerPrint led off
+                }
         }
+        
         clearPacket(fpShieldResponsePacket);            
 }
   
 void clearPacket(byte *packet) {
-  	for(int i=0; i<=50; i++) {
+  	for(int i=0; i<=50; i++) {        
   		packet[i] = 0x00;	
   	}
 }
 
 void scanFingerPrint() {
-        Serial.print("Scanning finger print");  
+        Serial.print("Scanning finger print: ");  
 	clearPacket(fpShieldCommandPacket);
 	fpShieldCommandPacket[0] = 0x55;
  	fpShieldCommandPacket[1] = 0xAA;
   	fpShieldCommandPacket[2] = 0x02;
   	fpShieldCommandPacket[3] = 0x01;
 
-	sendCommandPacket();
-        delay(500);       
-        Serial.println(".");       
+	sendCommandPacket();       
 }
 
 void sendCommandPacket() {
-	getCheckSum();
-	fingerPrint.write(fpShieldCommandPacket,24);
-        Serial.print(".");
-}
-
-void getCheckSum() {
-	int checkSum = 0;
-	
-	for(int i=0; i<=21;i++) {
-		checkSum += fpShieldCommandPacket[i];
-	}
+	int checkSum = getCheckSum(fpShieldCommandPacket, 21);
 	fpShieldCommandPacket[22] = checkSum & 0xFF;
 	fpShieldCommandPacket[23] = (checkSum - (checkSum & 0xFF))/256;
-        Serial.print(".");
+        
+	fingerPrint.write(fpShieldCommandPacket,24);
+        delay(500);
+}
+
+int getCheckSum(byte *packet, int packetSize) {
+	int checkSum = 0;
+	
+	for(int i=0; i<=packetSize; i++) {
+		checkSum += packet[i];
+	}
+
+        return checkSum;
 }
 
 void getResponsePacket() {
@@ -295,7 +291,7 @@ void getResponsePacket() {
 }
 
 void deleteAllFingerPrint() {
-        Serial.print("Deleting all user finger print");
+        Serial.print("Deleting all user finger print: ");
         clearPacket(fpShieldCommandPacket);
         fpShieldCommandPacket[0] = 0x55;
         fpShieldCommandPacket[1] = 0xAA;
@@ -303,13 +299,11 @@ void deleteAllFingerPrint() {
         fpShieldCommandPacket[3] = 0x01;
         
         sendCommandPacket();
-        delay(500);
-        Serial.println(".");        
-        Serial.println("Done\n\n");        
+        Serial.println("Done");
 }
 
 void addUserFingerPrint() {
-        Serial.print("Add user finger print");
+        Serial.print("Add user finger print: ");
         clearPacket(fpShieldCommandPacket);
         fpShieldCommandPacket[0] = 0x55;
         fpShieldCommandPacket[1] = 0xAA;
@@ -321,8 +315,15 @@ void addUserFingerPrint() {
         fpShieldCommandPacket[7] = 0x01;  
         
         sendCommandPacket();
-        delay(500);
-        Serial.println(".");         
+}
+
+void setPacketResponseTimeOut(int timeOut) {
+        for(int timeCount = 1, timeDelay = 100; timeCount*timeDelay <= timeOut; timeCount++) {
+            getResponsePacket();
+            delay(timeDelay);
+        }
+        
+        checkFingerPrint();
 }
 
 char getDTMF() {
