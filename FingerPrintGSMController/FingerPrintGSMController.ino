@@ -11,6 +11,7 @@ SoftwareSerial gsm(2,3);
 //TODO get userNumber on sim phonebook
 String userNumber = "09352983630";
 String userPassword = "123456";
+String locationLog = "";
 
 /* DTMF Decoder */
 float n = 128.0;
@@ -167,7 +168,7 @@ void readSMSCommand(String gsmResponseMessage) {
         if(command == "STOP" && password == userPassword) {
                 switchOnStarterRelay(false);
                 sendSMSAlert("\n\nEngine STOP.\n\n");
-                sendLocation();          
+                sendLocation(locationLog);          
         }
         if(command == "OVERRIDE" && password == userPassword) {
                 switchOnStarterRelay(true);
@@ -346,7 +347,6 @@ void readDTMFCommand() {
         }
 }
 
-String locationMessage;
 //add time when the engine start
 String getDirection() {
         String directions = "";
