@@ -5,8 +5,6 @@
 SoftwareSerial fingerPrint(10, 11);
 byte fpShieldCommandPacket[24];
 byte fpShieldResponsePacket[48];
-boolean activeAddUserFingerPrint = false;
-boolean activeDeleteUserFingerPrint = false;
 
 /* GSM Shield */
 SoftwareSerial gsm(2,3);
@@ -52,24 +50,11 @@ void setup() {
 
 void loop() {
         if(digitalRead(ignitionSwitch) == LOW) {        
-                if(starterRelayIsOff && (!activeAddUserFingerPrint || !activeDeleteUserFingerPrint)) {
+                if(starterRelayIsOff) {
                         scanFingerPrint();
                         setPacketResponseTimeOut(5000);         
                 }
         } else {
-                //TODO this should be inside readSMSCommand since it completes communication with the finger print shield. 
-                if(activeAddUserFingerPrint && starterRelayIsOff) {
-                        addUserFingerPrint();
-                        setPacketResponseTimeOut(10000);                        
-                        activeAddUserFingerPrint = false;                
-                }    
-                
-                if(activeDeleteUserFingerPrint && starterRelayIsOff) {
-                        deleteAllFingerPrint();
-                        activeDeleteUserFingerPrint = false;
-                        activeAddUserFingerPrint = true;
-                }                             
-                
                 gsmCallAndSMSListener();
                 
                 if(!starterRelayIsOff) {
@@ -187,7 +172,10 @@ void readSMSCommand(String gsmResponseMessage) {
                 sendSMSAlert("\n\nIgnition is ON.\n\n");                  
         }
         if(command == "RENEW" && password == userPassword) {          
-                activeDeleteUserFingerPrint = true;                  
+                deleteAllFingerPrint();                
+                delay(2000);
+                addUserFingerPrint();
+                setPacketResponseTimeOut(10000);                
         }        
 }
 
