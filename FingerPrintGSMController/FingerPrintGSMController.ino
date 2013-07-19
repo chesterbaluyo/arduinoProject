@@ -47,6 +47,7 @@ void setup() {
         delay(500);
         deleteAllSMS();
         delay(500);
+        //Delete after testing local time.
         Serial.println(getLocaleTime());
         delay(500);        
 }
@@ -57,13 +58,11 @@ void loop() {
                         scanFingerPrint();
                         setPacketResponseTimeOut(5000);         
                 }
-        } else {
-                gsmCallAndSMSListener();
-                
-                if(!starterRelayIsOff) {
-                    getDirection();                
-                }
-        }          
+        }
+        
+        gsmCallAndSMSListener();
+
+        //TODO make sendNotification();
 }
 
 void initializePin() {
@@ -126,6 +125,7 @@ String getGSMResponse() {
         boolean isAvailable = false;
         String gsmResponseMessage = "";
         gsm.listen();
+        
         while(gsm.available()>0) {
                 char incomingData = '\0';
                 incomingData = gsm.read(); 
@@ -208,10 +208,11 @@ String getLocaleTime() {
 void switchOnStarterRelay(boolean mode) {
         if(mode) {
                 //TODO make messages as a field.
-                Serial.println("\n\nIgnition is ON.\n\n");
+                Serial.println("\n\nIgnition is ON.\n\n");               
                 starterRelayIsOff = false;
-                digitalWrite(starterRelay, HIGH);        
-                locationMessage = "Start " + getLocaleTime();                
+                digitalWrite(starterRelay, HIGH);  
+                
+                locationLog = "Start " + getLocaleTime();                
         } else {
                 Serial.println("\n\nEngine STOP.\n\n");
                 starterRelayIsOff = true;
@@ -274,6 +275,7 @@ int getCheckSum(byte *packet, int packetSize) {
 void getResponsePacket() {
 	int i = 0;
         fingerPrint.listen();
+        
 	while(fingerPrint.available()>0) {
 		fpShieldResponsePacket[i] = fingerPrint.read();
                 Serial.print(i);
@@ -341,13 +343,13 @@ void readDTMFCommand() {
         }
         
         Serial.print("\n\nVerify: ");
-        Serial.println(dtmfCode)
+        Serial.println(dtmfCode);
         if(dtmfCode == userPassword) {
                 switchOnStarterRelay(false);
         }
 }
 
-//add time when the engine start
+//TODO make precise directions
 String getDirection() {
         String directions = "";
         int motorSpeed = analogRead(speedMeter);
@@ -362,11 +364,10 @@ String getDirection() {
         if(leftBearing) {
                 directions += "\nLeft: " + leftBearing;
                 directions += getLocaleTime();
-        } else if(rightBearing) {
+        } 
+        
+        if(rightBearing) {
                 directions += "\nRight: " + rightBearing;
-                directions += getLocaleTime();
-        } else {
-                directions += "\nStraight";
                 directions += getLocaleTime();
         }
         
@@ -374,19 +375,19 @@ String getDirection() {
 }
 
 void sendLocation(String location) {
-        int SMS_MAX_LENGHT = 150;
+        int SMS_MAX_LENGTH = 150;
         int index = 0;
         
-        if(location.length() > SMS_MAX_LENGHT) {
+        if(location.length() > SMS_MAX_LENGTH) {
                 while(location.length() > index) {
-                        Serial.println(location.substring(index, index + SMS_MAX_LENGHT));
-                        sendSMSAlert(location.substring(index, index + SMS_MAX_LENGHT)); 
-                        index += (SMS_MAX_LENGHT + 1);         
+                        Serial.println(location.substring(index, index + SMS_MAX_LENGTH));
+                        sendSMSAlert(location.substring(index, index + SMS_MAX_LENGTH)); 
+                        index += (SMS_MAX_LENGTH + 1);         
                 }
                  
                 sendSMSAlert(location.substring(index));
         } else {
-                if(location.lenght()) {
+                if(location.length()) {
                         sendSMSAlert(location);
                 }
         }
