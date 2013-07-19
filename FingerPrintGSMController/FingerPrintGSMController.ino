@@ -333,16 +333,16 @@ char getDTMF() {
 }
 
 void readDTMFCommand() {
-        int index = 0;
         String dtmfCode = "";
         
-        while(index < userPassword.length()) {
-            dtmfCode += getDTMF();
-            index++;            
+        while(dtmfCode.length() < userPassword.length()) {
+                dtmfCode += getDTMF(); 
         }
         
+        Serial.print("\n\nVerify: ");
+        Serial.println(dtmfCode)
         if(dtmfCode == userPassword) {
-            switchOnStarterRelay(false);
+                switchOnStarterRelay(false);
         }
 }
 
