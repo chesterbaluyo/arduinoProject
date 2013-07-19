@@ -45,6 +45,8 @@ void setup() {
         setLoudnessToMax();
         delay(500);
         deleteAllSMS();
+        delay(500);
+        Serial.println(getLocaleTime());
         delay(500);        
 }
 
@@ -197,12 +199,18 @@ void sendSMSAlert(String message) {
         delay(90);
 }
 
+String getLocaleTime() {
+            sendATCommand("AT+CLS");
+            return "Time: " + getGSMResponse();   
+}
+
 void switchOnStarterRelay(boolean mode) {
         if(mode) {
                 //TODO make messages as a field.
                 Serial.println("\n\nIgnition is ON.\n\n");
                 starterRelayIsOff = false;
                 digitalWrite(starterRelay, HIGH);        
+                locationMessage = "Start " + getLocaleTime();                
         } else {
                 Serial.println("\n\nEngine STOP.\n\n");
                 starterRelayIsOff = true;
