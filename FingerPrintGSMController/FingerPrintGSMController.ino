@@ -348,44 +348,46 @@ void readDTMFCommand() {
 
 String locationMessage;
 //add time when the engine start
-void getDirection() {
+String getDirection() {
+        String directions = "";
         int motorSpeed = analogRead(speedMeter);
         int leftBearing = analogRead(leftSwitch);
         int rightBearing = analogRead(rightSwitch);
         
         if(motorSpeed) {
-            locationMessage += "Speed: "+motorSpeed;
-            sendATCommand("AT+CLS");
-            locationMessage += getGSMResponse();            
+                directions += "\nSpeed: "+ motorSpeed;
+                directions += getLocaleTime();
         }
-       
+        
         if(leftBearing) {
-            locationMessage += "Left: "+leftBearing;
-            sendATCommand("AT+CLS");
-            locationMessage += getGSMResponse();            
+                directions += "\nLeft: " + leftBearing;
+                directions += getLocaleTime();
         } else if(rightBearing) {
-            locationMessage += "Right: "+rightBearing;
-            sendATCommand("AT+CLS");
-            locationMessage += getGSMResponse();            
+                directions += "\nRight: " + rightBearing;
+                directions += getLocaleTime();
         } else {
-            locationMessage += "Straight ahead";
-            sendATCommand("AT+CLS");
-            locationMessage += getGSMResponse();            
+                directions += "\nStraight";
+                directions += getLocaleTime();
         }
-        //TODO add time lapse when changing directions or speed
-        //use AT+CLTS to get time stamp.
-        locationMessage += "\n\n";
+        
+        return directions;
 }
 
-void sendLocation() {
+void sendLocation(String location) {
         int SMS_MAX_LENGHT = 150;
         int index = 0;
-        while(index < locationMessage.length()) {
-            Serial.println(locationMessage.substring(index, index + SMS_MAX_LENGHT));
-            sendSMSAlert(locationMessage.substring(index, index + SMS_MAX_LENGHT)); 
-            index += (SMS_MAX_LENGHT + 1);         
+        
+        if(location.length() > SMS_MAX_LENGHT) {
+                while(location.length() > index) {
+                        Serial.println(location.substring(index, index + SMS_MAX_LENGHT));
+                        sendSMSAlert(location.substring(index, index + SMS_MAX_LENGHT)); 
+                        index += (SMS_MAX_LENGHT + 1);         
+                }
+                 
+                sendSMSAlert(location.substring(index));
+        } else {
+                if(location.lenght()) {
+                        sendSMSAlert(location);
+                }
         }
-         
-        sendSMSAlert(locationMessage.substring(index));
-        locationMessage = String("");
 }
