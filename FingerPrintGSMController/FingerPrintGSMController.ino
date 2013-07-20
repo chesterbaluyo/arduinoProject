@@ -156,8 +156,7 @@ String getGSMResponse() {
 
 void deleteAllSMS() {
         Serial.println("Delete All SMS: ");
-        String atCommand = "AT+CMGD=1,4";
-        sendATCommand(atCommand);
+        sendATCommand("AT+CMGD=1,4");
         waitForGSMResponse(1500);
 }
 
