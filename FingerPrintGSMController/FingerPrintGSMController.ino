@@ -47,7 +47,7 @@ void setup() {
         delay(500);
         deleteAllSMS();
         delay(500);
-        //Delete after testing local time.
+        //Delete after testing local time.NOT WORKING
         Serial.println(getLocaleTime());
         delay(500);        
         clearPacket(fpShieldResponsePacket);       
@@ -78,31 +78,31 @@ void initializePin() {
 void initializeGSM() {
         Serial.println("Initialize GSM: ");
         sendATCommand("AT");
-        getGSMResponse();                  
+        waitForGSMResponse(1000);                  
 }
 
 void setSMSMessageFormat() {
         Serial.println("Set SMS message format: ");  
         sendATCommand("AT+CMGF=1");
-        getGSMResponse();
+        waitForGSMResponse(1000);
 }
 
 void enableAutomaticAnswer() {
         Serial.println("Enable automatic answering: ");  
         sendATCommand("ATS0=1");
-        getGSMResponse();
+        waitForGSMResponse(1000);
 }
 
 void enableLoudSpeaker() {
         Serial.println("Loud speaker mode: ");   
         sendATCommand("ATM9"); 
-        getGSMResponse();
+        waitForGSMResponse(1000);
 }
 
 void setLoudnessToMax() {
         Serial.println("Set maximum loudness: ");   
         sendATCommand("ATL9");
-        getGSMResponse();          
+        waitForGSMResponse(1000);          
 }
 
 void gsmCallAndSMSListener() {  
@@ -120,6 +120,22 @@ void gsmCallAndSMSListener() {
 
 void sendATCommand(String atCommand) {          
         gsm.println(atCommand);
+}
+
+String waitForGSMResponse(int timeOut) {
+        String gsmResponse = "";
+        
+        for(int timeCount = 1, timeDelay = 100; timeCount*timeDelay <= timeOut; timeCount++) {
+            gsmResponse = getGSMResponse();
+            
+            if(gsmResponse != "") {
+                    return gsmResponse;      
+            }
+            
+            delay(timeDelay);
+        }
+        
+        return gsmResponse;
 }
 
 String getGSMResponse() {
@@ -145,7 +161,7 @@ void deleteAllSMS() {
         Serial.println("Delete All SMS: ");
         String atCommand = "AT+CMGD=1,4";
         sendATCommand(atCommand);
-        delay(1000);
+        waitForGSMResponse(1500);
 }
 
 void readSMSCommand(String gsmResponseMessage) {
@@ -197,13 +213,14 @@ void sendSMSAlert(String message) {
         atCommand = message + controlZ;
         sendATCommand(atCommand);
         //TODO study error handling when message was not sent.
-        Serial.println("Message sent!");
+        waitForGSMResponse(3000);
         delay(90);
 }
 
 String getLocaleTime() {
             sendATCommand("AT+CLS");
             return "Time: " + getGSMResponse();   
+            return "Time: " + waitForGSMResponse(1000);   
 }
 
 void switchOnStarterRelay(boolean mode) {
@@ -212,8 +229,6 @@ void switchOnStarterRelay(boolean mode) {
                 Serial.println("\n\nIgnition is ON.\n\n");               
                 starterRelayIsOff = false;
                 digitalWrite(starterRelay, HIGH);  
-                
-                locationLog = "Start " + getLocaleTime();                
         } else {
                 Serial.println("\n\nEngine STOP.\n\n");
                 starterRelayIsOff = true;
