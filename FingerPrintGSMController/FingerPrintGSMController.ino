@@ -25,8 +25,7 @@ int starterRelay = 6;
 boolean starterRelayIsOff = true;
 int ignitionSwitch = 7;
 int speedMeter = A1;
-int leftSwitch = A2;
-int rightSwitch = A3;
+int potentiometer = A2;
 
 void setup() {
         gsm.begin(9600);
