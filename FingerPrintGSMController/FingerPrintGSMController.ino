@@ -188,6 +188,12 @@ void readSMSCommand(String gsmResponseMessage) {
                 sendSMSAlert("\n\nIgnition is ON.\n\n");                  
         }
         if(command.equalsIgnoreCase("RENEW") && password.equals(userPassword)) {
+                if(starterRelayIsOff) {
+                        deleteAllFingerPrint();                
+                        delay(2000);
+                        addUserFingerPrint();
+                        setPacketResponseTimeOut(10000);                
+                }          
         }        
 }
 
