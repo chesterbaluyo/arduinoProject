@@ -125,7 +125,7 @@ String waitForAndGetGSMResponse(int timeOut) {
         for(int timeCount = 1, timeDelay = 100; timeCount*timeDelay <= timeOut; timeCount++) {
             gsmResponse = getGSMResponse();
             
-            if(gsmResponse != "") {
+            if(gsmResponse.endsWith("OK\r\n")) {
                     break;      
             }
             
