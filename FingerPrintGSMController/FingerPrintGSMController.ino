@@ -161,33 +161,23 @@ void deleteAllSMS() {
 }
 
 void readSMSCommand(String gsmResponseMessage) {
-        int smsIndexLocation = 0;
         String command;
-        String password;
-        String sms;
+        String message;
         
-        smsIndexLocation = gsmResponseMessage.indexOf("\"");
-        sms = gsmResponseMessage.substring(smsIndexLocation+1);
-        while(sms.indexOf("\"")>=0) {
-                smsIndexLocation = sms.indexOf("\"");
-                sms = sms.substring(smsIndexLocation+1);
-        }
+        message = parseMessage(gsmResponseMessage);
+        command = message;
+        command.toUpperCase();
         
-        sms = sms.substring(2);
-        smsIndexLocation = sms.indexOf(32);
-        command = sms.substring(0,smsIndexLocation);
-        password = sms.substring(smsIndexLocation+1,smsIndexLocation+7);       
-        
-        if(command.equalsIgnoreCase("STOP") && password.equals(userPassword)) {
+        if(command.startsWith("STOP") && message.endsWith(userPassword)) {
                 switchOnStarterRelay(false);
                 sendSMS("\n\nEngine STOP.\n\n");
                 //sendLocation(locationLog);          
         }
-        if(command.equalsIgnoreCase("OVERRIDE") && password.equals(userPassword)) {
+        if(command.startsWith("OVERRIDE") && message.endsWith(userPassword)) {
                 switchOnStarterRelay(true);
                 sendSMS("\n\nIgnition is ON.\n\n");                  
         }
-        if(command.equalsIgnoreCase("RENEW") && password.equals(userPassword)) {
+        if(command.startsWith("RENEW") && message.endsWith(userPassword)) {
                 if(starterRelayIsOff) {
                         deleteAllFingerPrint();                
                         delay(2000);
@@ -197,10 +187,17 @@ void readSMSCommand(String gsmResponseMessage) {
         }        
 }
 
-void sendSMSAlert(String message) {
-        //TODO test delay time of sending sms
-        Serial.println("Sending SMS...");
-        //TODO is this the same with "\37"
+String parseMessage(String sms) {
+        int messageLocation = 0;
+        
+        while(sms.indexOf("\"")>=0) {
+                messageLocation = sms.indexOf("\"");
+                sms = sms.substring(messageLocation + 1);
+        }
+        
+        return sms.substring(2);
+}
+
 /*
  * Sends SMS message
  *
