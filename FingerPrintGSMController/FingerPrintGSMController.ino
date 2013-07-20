@@ -220,7 +220,7 @@ void sendSMS(String message) {
 
 String getTime() {
             sendATCommand("AT+CCLK?");
-            String time = "Time: " + waitForAndGetGSMResponse(1000).substring(29,37);
+            String time = waitForAndGetGSMResponse(1000).substring(29,37);
             
             return time;   
 }
