@@ -50,6 +50,7 @@ void setup() {
         //Delete after testing local time.
         Serial.println(getLocaleTime());
         delay(500);        
+        clearPacket(fpShieldResponsePacket);       
 }
 
 void loop() {
@@ -221,7 +222,7 @@ void switchOnStarterRelay(boolean mode) {
 }
 
 void checkFingerPrint() {  
-        if((fpShieldResponsePacket[9] == 1)) { 
+        if((fpShieldResponsePacket[9] == 2)) { 
                 Serial.println("Finger print PASSED.\n\n");
                 switchOnStarterRelay(true);            
         } else {
@@ -229,7 +230,7 @@ void checkFingerPrint() {
                         Serial.println("Finger print FAILED.\n\n");                      
                 } else {
                         Serial.println("*** Finger Print Shield not available! ***");
-                        //turn fingerPrint led off
+                        fpCancel();
                 }
         }
         
@@ -308,6 +309,16 @@ void addUserFingerPrint() {
         fpShieldCommandPacket[5] = 0x00;
         fpShieldCommandPacket[6] = 0x00;
         fpShieldCommandPacket[7] = 0x01;  
+        
+        sendCommandPacket();
+}
+
+void fpCancel() {
+        clearPacket(fpShieldCommandPacket);
+        fpShieldCommandPacket[0] = 0x55;
+        fpShieldCommandPacket[1] = 0xAA;
+        fpShieldCommandPacket[2] = 0x30;
+        fpShieldCommandPacket[3] = 0x01; 
         
         sendCommandPacket();
 }
