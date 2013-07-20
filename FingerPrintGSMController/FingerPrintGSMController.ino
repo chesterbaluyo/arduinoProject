@@ -178,20 +178,16 @@ void readSMSCommand(String gsmResponseMessage) {
         command = sms.substring(0,smsIndexLocation);
         password = sms.substring(smsIndexLocation+1,smsIndexLocation+7);       
         
-        if(command == "STOP" && password == userPassword) {
+        if(command.equalsIgnoreCase("STOP") && password.equals(userPassword)) {
                 switchOnStarterRelay(false);
                 sendSMSAlert("\n\nEngine STOP.\n\n");
-                sendLocation(locationLog);          
+                //sendLocation(locationLog);          
         }
-        if(command == "OVERRIDE" && password == userPassword) {
+        if(command.equalsIgnoreCase("OVERRIDE") && password.equals(userPassword)) {
                 switchOnStarterRelay(true);
                 sendSMSAlert("\n\nIgnition is ON.\n\n");                  
         }
-        if(command == "RENEW" && password == userPassword) {          
-                deleteAllFingerPrint();                
-                delay(2000);
-                addUserFingerPrint();
-                setPacketResponseTimeOut(10000);                
+        if(command.equalsIgnoreCase("RENEW") && password.equals(userPassword)) {
         }        
 }
 
@@ -257,7 +253,7 @@ void clearPacket(byte *packet, int packetSize) {
 }
 
 void scanFingerPrint() {
-        Serial.print("Scanning finger print: ");  
+        Serial.println("Scanning finger print: ");  
 	clearPacket(fpShieldCommandPacket, 24);
 	fpShieldCommandPacket[0] = 0x55;
  	fpShieldCommandPacket[1] = 0xAA;
@@ -312,7 +308,7 @@ void deleteAllFingerPrint() {
 }
 
 void addUserFingerPrint() {
-        Serial.print("Add user finger print: ");
+        Serial.println("Add user finger print: ");
         clearPacket(fpShieldCommandPacket, 24);
         fpShieldCommandPacket[0] = 0x55;
         fpShieldCommandPacket[1] = 0xAA;
