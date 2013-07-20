@@ -75,31 +75,31 @@ void initializePin() {
 void initializeGSM() {
         Serial.println("Initialize GSM: ");
         sendATCommand("AT");
-        waitForGSMResponse(1000);                  
+        waitForAndGetGSMResponse(1000);                  
 }
 
 void setSMSMessageFormat() {
         Serial.println("Set SMS message format: ");  
         sendATCommand("AT+CMGF=1");
-        waitForGSMResponse(1000);
+        waitForAndGetGSMResponse(1000);
 }
 
 void enableAutomaticAnswer() {
         Serial.println("Enable automatic answering: ");  
         sendATCommand("ATS0=1");
-        waitForGSMResponse(1000);
+        waitForAndGetGSMResponse(1000);
 }
 
 void enableLoudSpeaker() {
         Serial.println("Loud speaker mode: ");   
         sendATCommand("ATM9"); 
-        waitForGSMResponse(1000);
+        waitForAndGetGSMResponse(1000);
 }
 
 void setLoudnessToMax() {
         Serial.println("Set maximum loudness: ");   
         sendATCommand("ATL9");
-        waitForGSMResponse(1000);          
+        waitForAndGetGSMResponse(1000);          
 }
 
 void gsmCallAndSMSListener() {  
@@ -119,7 +119,7 @@ void sendATCommand(String atCommand) {
         gsm.println(atCommand);
 }
 
-String waitForGSMResponse(int timeOut) {
+String waitForAndGetGSMResponse(int timeOut) {
         String gsmResponse = "";
         
         for(int timeCount = 1, timeDelay = 100; timeCount*timeDelay <= timeOut; timeCount++) {
@@ -157,7 +157,7 @@ String getGSMResponse() {
 void deleteAllSMS() {
         Serial.println("Delete All SMS: ");
         sendATCommand("AT+CMGD=1,4");
-        waitForGSMResponse(1500);
+        waitForAndGetGSMResponse(1500);
 }
 
 void readSMSCommand(String gsmResponseMessage) {
@@ -209,13 +209,13 @@ void sendSMSAlert(String message) {
         atCommand = message + controlZ;
         sendATCommand(atCommand);
         //TODO study error handling when message was not sent.
-        waitForGSMResponse(3000);
+        waitForAndGetGSMResponse(3000);
         delay(90);
 }
 
 String getTime() {
             sendATCommand("AT+CCLK?");
-            String time = "Time: " + waitForGSMResponse(1000).substring(29,37);
+            String time = "Time: " + waitForAndGetGSMResponse(1000).substring(29,37);
             
             return time;   
 }
@@ -226,6 +226,7 @@ void switchOnStarterRelay(boolean mode) {
                 Serial.println("\n\nIgnition is ON.\n\n");               
                 starterRelayIsOff = false;
                 digitalWrite(starterRelay, HIGH);  
+                //TODO setTime() to 00:00:00  
         } else {
                 Serial.println("\n\nEngine STOP.\n\n");
                 starterRelayIsOff = true;
