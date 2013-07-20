@@ -46,9 +46,6 @@ void setup() {
         setLoudnessToMax();
         delay(500);
         deleteAllSMS();
-        delay(500);
-        //Delete after testing local time.NOT WORKING
-        Serial.println(getLocaleTime());
         delay(500);        
         clearPacket(fpShieldResponsePacket);       
 }
@@ -217,10 +214,11 @@ void sendSMSAlert(String message) {
         delay(90);
 }
 
-String getLocaleTime() {
-            sendATCommand("AT+CLS");
-            return "Time: " + getGSMResponse();   
-            return "Time: " + waitForGSMResponse(1000);   
+String getTime() {
+            sendATCommand("AT+CCLK?");
+            String time = "Time: " + waitForGSMResponse(1000).substring(29,37);
+            
+            return time;   
 }
 
 void switchOnStarterRelay(boolean mode) {
@@ -384,17 +382,17 @@ String getDirection() {
         
         if(motorSpeed) {
                 directions += "\nSpeed: "+ motorSpeed;
-                directions += getLocaleTime();
+                directions += getTime();
         }
         
         if(leftBearing) {
                 directions += "\nLeft: " + leftBearing;
-                directions += getLocaleTime();
+                directions += getTime();
         } 
         
         if(rightBearing) {
                 directions += "\nRight: " + rightBearing;
-                directions += getLocaleTime();
+                directions += getTime();
         }
         
         return directions;
