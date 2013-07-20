@@ -126,7 +126,7 @@ String waitForGSMResponse(int timeOut) {
             gsmResponse = getGSMResponse();
             
             if(gsmResponse != "") {
-                    return gsmResponse;      
+                    break;      
             }
             
             delay(timeDelay);
