@@ -378,27 +378,45 @@ void readDTMFCommand() {
         }
 }
 
-//TODO make precise directions
+//TODO test motorSpeed
 String getDirection() {
+        int RESISTOR_MAX_ANGLE = 270;
+        int RESISTOR_MAX_VALUE = 1050;
+        int STEP = 10;
+        static int LAST_SHIFT = 0;
+        float motorSpeed = analogRead(speedMeter);
+        float resistorValue = analogRead(potentiometer);
         String directions = "";
-        int motorSpeed = analogRead(speedMeter);
-        int leftBearing = analogRead(leftSwitch);
-        int rightBearing = analogRead(rightSwitch);
-        
-        if(motorSpeed) {
-                directions += "\nSpeed: "+ motorSpeed;
-                directions += getTime();
+
+        int bearing = (resistorValue / RESISTOR_MAX_VALUE) * RESISTOR_MAX_ANGLE;
+        if(RESISTOR_MAX_ANGLE / 2 > bearing) {
+            bearing = RESISTOR_MAX_ANGLE / 2 - bearing;
+            
+            if(bearing > (STEP + LAST_SHIFT)) {
+                  directions = "L-";
+                  directions += bearing;
+                  LAST_SHIFT = bearing;       
+            } else if(bearing < (LAST_SHIFT - STEP)) {
+                  LAST_SHIFT = bearing;
+                  directions = "L-";
+                  directions += bearing;
+            }
+        } else {
+            bearing -= RESISTOR_MAX_ANGLE / 2;
+            
+            if(bearing > (STEP + LAST_SHIFT)) {
+                  directions = "R-";
+                  directions += bearing;
+                  LAST_SHIFT = bearing;      
+            } else if(bearing < (LAST_SHIFT - STEP)) {
+                  LAST_SHIFT = bearing;
+                  directions = "R-";
+                  directions += bearing;
+            }           
         }
         
-        if(leftBearing) {
-                directions += "\nLeft: " + leftBearing;
-                directions += getTime();
-        } 
-        
-        if(rightBearing) {
-                directions += "\nRight: " + rightBearing;
-                directions += getTime();
-        }
+        directions += "-";                  
+        directions += getTime();
         
         return directions;
 }
