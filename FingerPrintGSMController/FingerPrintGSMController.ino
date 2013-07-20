@@ -268,7 +268,7 @@ void scanFingerPrint() {
 }
 
 void sendCommandPacket() {
-	int checkSum = getCheckSum(fpShieldCommandPacket, 21);
+	int checkSum = getCheckSum(fpShieldCommandPacket, 22);
 	fpShieldCommandPacket[22] = checkSum & 0xFF;
 	fpShieldCommandPacket[23] = (checkSum - (checkSum & 0xFF))/256;
         
@@ -279,7 +279,7 @@ void sendCommandPacket() {
 int getCheckSum(byte *packet, int packetSize) {
 	int checkSum = 0;
 	
-	for(int i=0; i<=packetSize; i++) {
+	for(int i = 0; i < packetSize; i++) {
 		checkSum += packet[i];
 	}
 
