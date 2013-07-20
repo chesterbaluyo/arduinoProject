@@ -180,12 +180,12 @@ void readSMSCommand(String gsmResponseMessage) {
         
         if(command.equalsIgnoreCase("STOP") && password.equals(userPassword)) {
                 switchOnStarterRelay(false);
-                sendSMSAlert("\n\nEngine STOP.\n\n");
+                sendSMS("\n\nEngine STOP.\n\n");
                 //sendLocation(locationLog);          
         }
         if(command.equalsIgnoreCase("OVERRIDE") && password.equals(userPassword)) {
                 switchOnStarterRelay(true);
-                sendSMSAlert("\n\nIgnition is ON.\n\n");                  
+                sendSMS("\n\nIgnition is ON.\n\n");                  
         }
         if(command.equalsIgnoreCase("RENEW") && password.equals(userPassword)) {
                 if(starterRelayIsOff) {
@@ -201,18 +201,25 @@ void sendSMSAlert(String message) {
         //TODO test delay time of sending sms
         Serial.println("Sending SMS...");
         //TODO is this the same with "\37"
+/*
+ * Sends SMS message
+ *
+ * @REQUIRED message
+ *
+ * When unable to send SMS the GSM device waits at most 16s to respond. 
+ **/
+void sendSMS(String message) {
+        Serial.println("Sending SMS: ");
         char controlZ = 0x1A;
-        String atCommand = "AT+CMGS= \"";
+        String atCommand = "AT+CMGS=\"";
         
         atCommand += userNumber + "\"";
         sendATCommand(atCommand);
-        delay(90);
+        waitForAndGetGSMResponse(1000);
         
         atCommand = message + controlZ;
         sendATCommand(atCommand);
-        //TODO study error handling when message was not sent.
-        waitForAndGetGSMResponse(3000);
-        delay(90);
+        waitForAndGetGSMResponse(15000);
 }
 
 String getTime() {
@@ -407,14 +414,14 @@ void sendLocation(String location) {
         if(location.length() > SMS_MAX_LENGTH) {
                 while(location.length() > index) {
                         Serial.println(location.substring(index, index + SMS_MAX_LENGTH));
-                        sendSMSAlert(location.substring(index, index + SMS_MAX_LENGTH)); 
+                        sendSMS(location.substring(index, index + SMS_MAX_LENGTH)); 
                         index += (SMS_MAX_LENGTH + 1);         
                 }
                  
-                sendSMSAlert(location.substring(index));
+                sendSMS(location.substring(index));
         } else {
                 if(location.length()) {
-                        sendSMSAlert(location);
+                        sendSMS(location);
                 }
         }
 }
