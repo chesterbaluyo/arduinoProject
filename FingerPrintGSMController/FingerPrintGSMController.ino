@@ -47,7 +47,7 @@ void setup() {
         delay(500);
         deleteAllSMS();
         delay(500);        
-        clearPacket(fpShieldResponsePacket);       
+        clearPacket(fpShieldResponsePacket, 48);     
 }
 
 void loop() {
@@ -247,18 +247,18 @@ void checkFingerPrint() {
                 }
         }
         
-        clearPacket(fpShieldResponsePacket);            
+        clearPacket(fpShieldResponsePacket, 48);            
 }
   
-void clearPacket(byte *packet) {
-  	for(int i=0; i<=50; i++) {        
-  		packet[i] = 0x00;	
+void clearPacket(byte *packet, int packetSize) {
+  	for(int index = 0; index < packetSize; index++) {        
+  		packet[index] = 0x00;	
   	}
 }
 
 void scanFingerPrint() {
         Serial.print("Scanning finger print: ");  
-	clearPacket(fpShieldCommandPacket);
+	clearPacket(fpShieldCommandPacket, 24);
 	fpShieldCommandPacket[0] = 0x55;
  	fpShieldCommandPacket[1] = 0xAA;
   	fpShieldCommandPacket[2] = 0x02;
@@ -301,7 +301,7 @@ void getResponsePacket() {
 
 void deleteAllFingerPrint() {
         Serial.print("Deleting all user finger print: ");
-        clearPacket(fpShieldCommandPacket);
+        clearPacket(fpShieldCommandPacket, 24);
         fpShieldCommandPacket[0] = 0x55;
         fpShieldCommandPacket[1] = 0xAA;
         fpShieldCommandPacket[2] = 0x06;  
@@ -313,7 +313,7 @@ void deleteAllFingerPrint() {
 
 void addUserFingerPrint() {
         Serial.print("Add user finger print: ");
-        clearPacket(fpShieldCommandPacket);
+        clearPacket(fpShieldCommandPacket, 24);
         fpShieldCommandPacket[0] = 0x55;
         fpShieldCommandPacket[1] = 0xAA;
         fpShieldCommandPacket[2] = 0x03;
@@ -327,7 +327,7 @@ void addUserFingerPrint() {
 }
 
 void fpCancel() {
-        clearPacket(fpShieldCommandPacket);
+        clearPacket(fpShieldCommandPacket, 24);
         fpShieldCommandPacket[0] = 0x55;
         fpShieldCommandPacket[1] = 0xAA;
         fpShieldCommandPacket[2] = 0x30;
