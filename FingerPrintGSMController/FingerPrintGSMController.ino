@@ -287,15 +287,15 @@ int getCheckSum(byte *packet, int packetSize) {
 }
 
 void getResponsePacket() {
-	int i = 0;
+	int index = 0;
         fingerPrint.listen();
         
-	while(fingerPrint.available()>0) {
-		fpShieldResponsePacket[i] = fingerPrint.read();
-                Serial.print(i);
-                Serial.print("-----");
-                Serial.println(fpShieldResponsePacket[i]);
-		i++;
+	while(fingerPrint.available() > 0) {
+		fpShieldResponsePacket[index] = fingerPrint.read();
+                //Serial.print(i);
+                //Serial.print("-----");
+                //Serial.println(fpShieldResponsePacket[i]);
+		index++;
 	}
 }
 
