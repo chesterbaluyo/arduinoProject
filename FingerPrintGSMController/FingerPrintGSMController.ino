@@ -78,31 +78,31 @@ void initializePin() {
 void initializeGSM() {
         Serial.println("Initialize GSM: ");
         sendATCommand("AT");
-        waitForAndGetGSMResponse(1000);                  
+        Serial.print(waitForAndGetGSMResponse(1000));                  
 }
 
 void setSMSMessageFormat() {
         Serial.println("Set SMS message format: ");  
         sendATCommand("AT+CMGF=1");
-        waitForAndGetGSMResponse(1000);
+        Serial.print(waitForAndGetGSMResponse(1000));
 }
 
 void enableAutomaticAnswer() {
         Serial.println("Enable automatic answering: ");  
         sendATCommand("ATS0=1");
-        waitForAndGetGSMResponse(1000);
+        Serial.print(waitForAndGetGSMResponse(1000));
 }
 
 void enableLoudSpeaker() {
         Serial.println("Loud speaker mode: ");   
         sendATCommand("ATM9"); 
-        waitForAndGetGSMResponse(1000);
+        Serial.print(waitForAndGetGSMResponse(1000));
 }
 
 void setLoudnessToMax() {
         Serial.println("Set maximum loudness: ");   
         sendATCommand("ATL9");
-        waitForAndGetGSMResponse(1000);          
+        Serial.print(waitForAndGetGSMResponse(1000));
 }
 
 void gsmCallAndSMSListener() {  
@@ -115,6 +115,10 @@ void gsmCallAndSMSListener() {
         else if (gsmResponseMessage.substring(2,6)=="+CTI") {
                 //TODO check if correct gsm response when incoming call is indicated
                 readDTMFCommand();        
+        }
+        
+        if(!gsmResponseMessage.equals("")) {
+                Serial.println(gsmResponseMessage);
         }
 }
 
@@ -130,6 +134,8 @@ String waitForAndGetGSMResponse(int timeOut) {
             
             if(gsmResponse.endsWith("OK\r\n")) {
                     break;      
+            } else if(gsmResponse.endsWith("ERROR\r\n")) {
+                    break;
             }
             
             delay(timeDelay);
@@ -139,7 +145,6 @@ String waitForAndGetGSMResponse(int timeOut) {
 }
 
 String getGSMResponse() {
-        boolean isAvailable = false;
         String gsmResponseMessage = "";
         gsm.listen();
         
@@ -147,20 +152,15 @@ String getGSMResponse() {
                 char incomingData = '\0';
                 incomingData = gsm.read(); 
                 gsmResponseMessage += incomingData;
-                isAvailable = true;
         }
- 
-        if(isAvailable) {
-                Serial.println(gsmResponseMessage);          
-        }
-        
+
         return gsmResponseMessage;
 }
 
 void deleteAllSMS() {
         Serial.println("Delete All SMS: ");
         sendATCommand("AT+CMGD=1,4");
-        waitForAndGetGSMResponse(5000);
+        Serial.print(waitForAndGetGSMResponse(5000));
 }
 
 void readSMSCommand(String gsmResponseMessage) {
@@ -209,7 +209,9 @@ String parseMessage(String sms) {
  * When unable to send SMS the GSM device waits at most 16s to respond. 
  **/
 void sendSMS(String message) {
-        Serial.println("Sending SMS: ");
+        Serial.print("Sending SMS \"");
+        Serial.print(message);
+        Serial.println("\": ");
         char controlZ = 0x1A;
         String atCommand = "AT+CMGS=\"";
         
@@ -219,7 +221,7 @@ void sendSMS(String message) {
         
         atCommand = message + controlZ;
         sendATCommand(atCommand);
-        waitForAndGetGSMResponse(15000);
+        Serial.print(waitForAndGetGSMResponse(15000));
 }
 
 String getTime() {
