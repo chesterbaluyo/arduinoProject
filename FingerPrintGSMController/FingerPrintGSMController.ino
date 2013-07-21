@@ -8,8 +8,7 @@ byte fpShieldResponsePacket[48];
 
 /* GSM Shield */
 SoftwareSerial gsm(2,3);
-//TODO get userNumber on sim phonebook
-String userNumber = "09352983630";
+String defaultUserNumber = "09996219071";
 String defaultPassword = "123456";
 String locationLog = "";
 
@@ -214,16 +213,36 @@ void sendSMS(String message) {
         Serial.print("Sending SMS \"");
         Serial.print(message);
         Serial.println("\": ");
+        
         char controlZ = 0x1A;
         String atCommand = "AT+CMGS=\"";
         
-        atCommand += userNumber + "\"";
+        atCommand += getUserNumber() + "\"";
         sendATCommand(atCommand);
         waitForAndGetGSMResponse(1000);
         
         atCommand = message + controlZ;
         sendATCommand(atCommand);
-        Serial.print(waitForAndGetGSMResponse(15000));
+        Serial.print(waitForAndGetGSMResponse(15000));                 
+}
+
+String getUserNumber() {
+        Serial.println("User number: ");
+        String number = "";
+        sendATCommand("AT+CPBF=\"user\"");
+        
+        number = waitForAndGetGSMResponse(2000);
+        
+        if(number.equals("")) {
+                number = defaultUserNumber;
+        } else {
+                number = number.substring(10,21);        
+                Serial.println(number);                  
+        }
+        
+        return number;
+}
+
 String getPassword() {
         Serial.println("Password: ");
         String password = "";
