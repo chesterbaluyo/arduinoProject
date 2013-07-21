@@ -57,6 +57,10 @@ void loop() {
                 }
         }
         
+        locationLog = getDirection();
+        if(!locationLog.startsWith("-")) {
+                Serial.println(locationLog);
+        }
         gsmCallAndSMSListener();
 
         //TODO make sendNotification();
@@ -378,40 +382,32 @@ void readDTMFCommand() {
 
 //TODO test motorSpeed
 String getDirection() {
+        static int LAST_SHIFT = 0;  
         int RESISTOR_MAX_ANGLE = 270;
         int RESISTOR_MAX_VALUE = 1050;
         int STEP = 10;
-        static int LAST_SHIFT = 0;
+        
         float motorSpeed = analogRead(speedMeter);
         float resistorValue = analogRead(potentiometer);
         String directions = "";
 
-        int bearing = (resistorValue / RESISTOR_MAX_VALUE) * RESISTOR_MAX_ANGLE;
-        if(RESISTOR_MAX_ANGLE / 2 > bearing) {
-            bearing = RESISTOR_MAX_ANGLE / 2 - bearing;
-            
-            if(bearing > (STEP + LAST_SHIFT)) {
-                  directions = "L-";
-                  directions += bearing;
-                  LAST_SHIFT = bearing;       
-            } else if(bearing < (LAST_SHIFT - STEP)) {
-                  LAST_SHIFT = bearing;
-                  directions = "L-";
-                  directions += bearing;
-            }
-        } else {
-            bearing -= RESISTOR_MAX_ANGLE / 2;
-            
-            if(bearing > (STEP + LAST_SHIFT)) {
-                  directions = "R-";
-                  directions += bearing;
-                  LAST_SHIFT = bearing;      
-            } else if(bearing < (LAST_SHIFT - STEP)) {
-                  LAST_SHIFT = bearing;
-                  directions = "R-";
-                  directions += bearing;
-            }           
+        int shift = RESISTOR_MAX_ANGLE / 2 - resistorValue / RESISTOR_MAX_VALUE * RESISTOR_MAX_ANGLE;
+        
+        if(shift >= (LAST_SHIFT + STEP)) {
+              directions += shift;
+              LAST_SHIFT = shift;              
         }
+       
+        if(shift <= (LAST_SHIFT - STEP)) {
+              directions += shift;
+              LAST_SHIFT = shift;              
+        }
+        
+        if(directions.startsWith("-")) {
+              directions += "R-";
+        } else (
+              directions += "L-";
+        )
         
         directions += "-";                  
         directions += getTime();
