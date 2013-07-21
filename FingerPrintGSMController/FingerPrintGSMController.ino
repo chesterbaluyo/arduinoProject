@@ -53,7 +53,9 @@ void loop() {
                 if(starterRelayIsOff) {
                         scanFingerPrint();
                         waitForAndCheckPacketResponse(5000);         
-                }
+                } else {
+                        switchOnStarterRelay(false);
+                }  
         }
         
         locationLog = getDirection();
