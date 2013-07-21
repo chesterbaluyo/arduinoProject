@@ -344,11 +344,13 @@ void waitForAndCheckPacketResponse(int timeOut) {
             delay(timeDelay);
         }
         
-        if(getCheckSum(fpShieldResponsePacket, 48)) {
-                Serial.println("Finger print FAILED.\n\n");                      
-        } else {
-                Serial.println("*** Finger Print Shield not available! ***");
-                fpCancel();
+        if((fpShieldResponsePacket[9] != 2)) {
+                if(getCheckSum(fpShieldResponsePacket, 48)) {
+                        Serial.println("Finger print FAILED.\n\n");                      
+                } else {
+                        Serial.println("*** Finger Print Shield not available! ***");
+                        fpCancel();
+                }        
         }
         
         clearPacket(fpShieldResponsePacket, 48);        
