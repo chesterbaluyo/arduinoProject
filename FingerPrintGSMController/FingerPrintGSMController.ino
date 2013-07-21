@@ -417,7 +417,6 @@ void readDTMFCommand() {
         }
 }
 
-//TODO test motorSpeed
 String getDirection() {
         static int LAST_SHIFT = 0;  
         int RESISTOR_MAX_ANGLE = 270;
@@ -456,6 +455,14 @@ String readDirection(int angle) {
               directions += getTime();
               
               return directions;
+}
+
+//TODO test motorSpeed
+String getSpeed() {
+        float speedValue = analogRead(speedMeter);
+        String motorSpeed = "";
+      
+        return motorSpeed;  
 }
 
 void sendLocation(String location) {
