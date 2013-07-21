@@ -11,6 +11,8 @@ SoftwareSerial gsm(2,3);
 String defaultUserNumber = "09996219071";
 String defaultPassword = "123456";
 String locationLog = "";
+//TODO save config file in SIM
+//password should be the PIN.
 
 /* DTMF Decoder */
 float n = 128.0;
@@ -172,13 +174,12 @@ void readSMSCommand(String gsmResponseMessage) {
         
         if(command.startsWith("STOP") && (message.endsWith(password) || message.endsWith(defaultPassword))) {
                 switchOnStarterRelay(false);
-                sendSMS("\n\nEngine STOP.\n\n");
-                //sendLocation(locationLog);          
+                sendSMS("Engine STOP.");
                 sendLocationLog();          
         }
         if(command.startsWith("OVERRIDE") && (message.endsWith(password) || message.endsWith(defaultPassword))) {
                 switchOnStarterRelay(true);
-                sendSMS("\n\nIgnition is ON.\n\n");                  
+                sendSMS("Override: " + gsmResponseMessage.substring(5));                  
         }
         if(command.startsWith("RENEW") && (message.endsWith(password) || message.endsWith(defaultPassword))) {
                 if(starterRelayIsOff) {
@@ -272,8 +273,9 @@ void switchOnStarterRelay(boolean mode) {
                 Serial.println("\n\nIgnition is ON.\n\n");               
                 starterRelayIsOff = false;
                 digitalWrite(starterRelay, HIGH);  
-                //TODO setTime() to 00:00:00  
                 locationLog = ""; 
+                //TODO setTime() to 00:00:00
+                //use AT+CCLK="yy/mm/dd,hh:mm:ss+zz"  
         } else {
                 Serial.println("\n\nEngine STOP.\n\n");
                 starterRelayIsOff = true;
