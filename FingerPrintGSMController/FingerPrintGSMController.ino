@@ -53,7 +53,7 @@ void loop() {
         if(digitalRead(ignitionSwitch) == LOW) {        
                 if(starterRelayIsOff) {
                         scanFingerPrint();
-                        setPacketResponseTimeOut(5000);         
+                        waitForAndCheckPacketResponse(5000);         
                 }
         }
         
@@ -181,7 +181,7 @@ void readSMSCommand(String gsmResponseMessage) {
                         deleteAllFingerPrint();                
                         delay(2000);
                         addUserFingerPrint();
-                        setPacketResponseTimeOut(10000);                
+                        waitForAndCheckPacketResponse(10000);                
                 }          
         }        
 }
@@ -237,22 +237,6 @@ void switchOnStarterRelay(boolean mode) {
                 starterRelayIsOff = true;
                 digitalWrite(starterRelay, LOW);         
         }
-}
-
-void checkFingerPrint() {  
-        if((fpShieldResponsePacket[9] == 2)) { 
-                Serial.println("Finger print PASSED.\n\n");
-                switchOnStarterRelay(true);            
-        } else {
-                if(getCheckSum(fpShieldResponsePacket, 48)) {
-                        Serial.println("Finger print FAILED.\n\n");                      
-                } else {
-                        Serial.println("*** Finger Print Shield not available! ***");
-                        fpCancel();
-                }
-        }
-        
-        clearPacket(fpShieldResponsePacket, 48);            
 }
   
 void clearPacket(byte *packet, int packetSize) {
@@ -341,13 +325,27 @@ void fpCancel() {
         sendCommandPacket();
 }
 
-void setPacketResponseTimeOut(int timeOut) {
+void waitForAndCheckPacketResponse(int timeOut) {
         for(int timeCount = 1, timeDelay = 100; timeCount*timeDelay <= timeOut; timeCount++) {
             getResponsePacket();
+            
+            if((fpShieldResponsePacket[9] == 2)) { 
+                    Serial.println("Finger print PASSED.\n\n");
+                    switchOnStarterRelay(true);
+                    break;            
+            }            
+            
             delay(timeDelay);
         }
         
-        checkFingerPrint();
+        if(getCheckSum(fpShieldResponsePacket, 48)) {
+                Serial.println("Finger print FAILED.\n\n");                      
+        } else {
+                Serial.println("*** Finger Print Shield not available! ***");
+                fpCancel();
+        }
+        
+        clearPacket(fpShieldResponsePacket, 48);        
 }
 
 char getDTMF() {
