@@ -58,13 +58,8 @@ void loop() {
                 }  
         }
         
-        locationLog = getDirection();
-        if(!locationLog.startsWith("-")) {
-                Serial.println(locationLog);
-        }
         gsmCallAndSMSListener();
-
-        //TODO make sendNotification();
+        sendNotification();
 }
 
 void initializePin() {
@@ -478,6 +473,21 @@ void sendLocation(String location) {
         } else {
                 if(location.length()) {
                         sendSMS(location);
+                }
+        }
+}
+
+void sendNotification() {
+        //TODO add also when bike has been picked up or device has been disconnected.
+        if(starterRelayIsOff) {
+                String hasChange = getDirection();
+                if(!hasChange.length()) {
+                        sendSMS("ALERT! " + hasChange);
+                }
+                
+                hasChange = getSpeed();
+                if(!hasChange.length()) {
+                        sendSMS("ALERT! " + hasChange);
                 }
         }
 }
