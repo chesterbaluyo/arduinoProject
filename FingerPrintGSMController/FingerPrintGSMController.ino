@@ -465,6 +465,26 @@ String getSpeed() {
         return motorSpeed;  
 }
 
+String getLocation() {
+        String location = "";
+        
+        String currentSpeed = getSpeed();
+        if(!currentSpeed.length()) {
+          
+                location += currentSpeed;
+                
+                String currentDirection = getDirection();
+                if(!currentDirection.length()) {
+                        location += currentDirection;
+                
+                }
+                
+                Serial.println(location);        
+        }
+        
+        return location;
+}
+
 void sendLocation(String location) {
         int SMS_MAX_LENGTH = 150;
         int index = 0;
