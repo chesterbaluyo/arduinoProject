@@ -10,7 +10,7 @@ byte fpShieldResponsePacket[48];
 SoftwareSerial gsm(2,3);
 //TODO get userNumber on sim phonebook
 String userNumber = "09352983630";
-String userPassword = "123456";
+String defaultPassword = "123456";
 String locationLog = "";
 
 /* DTMF Decoder */
@@ -166,21 +166,23 @@ void deleteAllSMS() {
 void readSMSCommand(String gsmResponseMessage) {
         String command;
         String message;
+        String password;
         
         message = parseMessage(gsmResponseMessage);
         command = message;
         command.toUpperCase();
+        password = getPassword();
         
-        if(command.startsWith("STOP") && message.endsWith(userPassword)) {
+        if(command.startsWith("STOP") && (message.endsWith(password) || message.endsWith(defaultPassword))) {
                 switchOnStarterRelay(false);
                 sendSMS("\n\nEngine STOP.\n\n");
                 //sendLocation(locationLog);          
         }
-        if(command.startsWith("OVERRIDE") && message.endsWith(userPassword)) {
+        if(command.startsWith("OVERRIDE") && (message.endsWith(password) || message.endsWith(defaultPassword))) {
                 switchOnStarterRelay(true);
                 sendSMS("\n\nIgnition is ON.\n\n");                  
         }
-        if(command.startsWith("RENEW") && message.endsWith(userPassword)) {
+        if(command.startsWith("RENEW") && (message.endsWith(password) || message.endsWith(defaultPassword))) {
                 if(starterRelayIsOff) {
                         deleteAllFingerPrint();                
                         delay(2000);
@@ -222,6 +224,21 @@ void sendSMS(String message) {
         atCommand = message + controlZ;
         sendATCommand(atCommand);
         Serial.print(waitForAndGetGSMResponse(15000));
+String getPassword() {
+        Serial.println("Password: ");
+        String password = "";
+        sendATCommand("AT+CPBF=\"password\"");
+        
+        password = waitForAndGetGSMResponse(2000);
+        
+        if(password.equals("")) {
+                password = defaultUserNumber;
+        } else {
+                password = password.substring(10,21);
+                Serial.println(password);
+        }
+        
+        return password;
 }
 
 String getTime() {
@@ -373,13 +390,13 @@ char getDTMF() {
 void readDTMFCommand() {
         String dtmfCode = "";
         
-        while(dtmfCode.length() < userPassword.length()) {
+        while(dtmfCode.length() < (getPassword().length() || defaultPassword.length())) {
                 dtmfCode += getDTMF(); 
         }
         
         Serial.print("\n\nVerify: ");
         Serial.println(dtmfCode);
-        if(dtmfCode == userPassword) {
+        if(dtmfCode.equals(defaultPassword) || dtmfCode.equals(getPassword())) {
                 switchOnStarterRelay(false);
         }
 }
