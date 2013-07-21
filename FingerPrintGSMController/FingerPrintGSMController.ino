@@ -113,7 +113,7 @@ void gsmCallAndSMSListener() {
                 readDTMFCommand();        
         }
         
-        if(!gsmResponseMessage.equals("")) {
+        if(!gsmResponseMessage.length()) {
                 Serial.println(gsmResponseMessage);
         }
 }
@@ -230,7 +230,7 @@ String getUserNumber() {
         
         number = waitForAndGetGSMResponse(2000);
         
-        if(number.equals("")) {
+        if(number.length()) {
                 number = defaultUserNumber;
         } else {
                 number = number.substring(10,21);        
@@ -247,7 +247,7 @@ String getPassword() {
         
         password = waitForAndGetGSMResponse(2000);
         
-        if(password.equals("")) {
+        if(password.length()) {
                 password = defaultUserNumber;
         } else {
                 password = password.substring(10,21);
