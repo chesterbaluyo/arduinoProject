@@ -60,6 +60,7 @@ void loop() {
         
         gsmCallAndSMSListener();
         sendNotification();
+        locationLog += getLocation();
 }
 
 void initializePin() {
@@ -173,6 +174,7 @@ void readSMSCommand(String gsmResponseMessage) {
                 switchOnStarterRelay(false);
                 sendSMS("\n\nEngine STOP.\n\n");
                 //sendLocation(locationLog);          
+                sendLocationLog();          
         }
         if(command.startsWith("OVERRIDE") && (message.endsWith(password) || message.endsWith(defaultPassword))) {
                 switchOnStarterRelay(true);
@@ -271,6 +273,7 @@ void switchOnStarterRelay(boolean mode) {
                 starterRelayIsOff = false;
                 digitalWrite(starterRelay, HIGH);  
                 //TODO setTime() to 00:00:00  
+                locationLog = ""; 
         } else {
                 Serial.println("\n\nEngine STOP.\n\n");
                 starterRelayIsOff = true;
@@ -485,21 +488,21 @@ String getLocation() {
         return location;
 }
 
-void sendLocation(String location) {
+void sendLocationLog() {
         int SMS_MAX_LENGTH = 150;
         int index = 0;
         
-        if(location.length() > SMS_MAX_LENGTH) {
-                while(location.length() > index) {
-                        Serial.println(location.substring(index, index + SMS_MAX_LENGTH));
-                        sendSMS(location.substring(index, index + SMS_MAX_LENGTH)); 
+        if(locationLog.length() > SMS_MAX_LENGTH) {
+                while(locationLog.length() > index) {
+                        Serial.println(locationLog.substring(index, index + SMS_MAX_LENGTH));
+                        sendSMS(locationLog.substring(index, index + SMS_MAX_LENGTH)); 
                         index += (SMS_MAX_LENGTH + 1);         
                 }
                  
-                sendSMS(location.substring(index));
+                sendSMS(locationLog.substring(index));
         } else {
-                if(location.length()) {
-                        sendSMS(location);
+                if(locationLog.length()) {
+                        sendSMS(locationLog);
                 }
         }
 }
