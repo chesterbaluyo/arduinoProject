@@ -423,39 +423,39 @@ String getDirection() {
         int RESISTOR_MAX_ANGLE = 270;
         int RESISTOR_MAX_VALUE = 1050;
         int STEP = 10;
-        
-        float motorSpeed = analogRead(speedMeter);
         float resistorValue = analogRead(potentiometer);
         String directions = "";
-
+        
         int shift = RESISTOR_MAX_ANGLE / 2 - resistorValue / RESISTOR_MAX_VALUE * RESISTOR_MAX_ANGLE;
         
         if(shift >= (LAST_SHIFT + STEP)) {
               LAST_SHIFT = shift; 
-              if(shift > 0) {
-                      directions +="L-";                
-                      directions += shift;                
-              } else {
-                      directions +="R";
-                      directions += shift;                
-              }               
+              directions = readDirection(shift);  
         }
        
         if(shift <= (LAST_SHIFT - STEP)) {
               LAST_SHIFT = shift;        
-              if(shift > 0) {
-                      directions +="L-";                
-                      directions += shift;                
-              } else {
-                      directions +="R";
-                      directions += shift;                
-              }                              
+              directions = readDirection(shift);                            
         }
         
-        directions += "-";                  
-        directions += getTime();                      
-        
         return directions;
+}
+
+String readDirection(int angle) {
+              String directions = "";
+              
+              if(angle > 0) {
+                      directions += "L-";                
+                      directions += angle;                
+              } else {
+                      directions += "R";
+                      directions += angle;                
+              }
+              
+              directions += "-";                  
+              directions += getTime();
+              
+              return directions;
 }
 
 void sendLocation(String location) {
