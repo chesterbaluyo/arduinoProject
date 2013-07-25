@@ -53,16 +53,19 @@ void setup() {
 void loop() {
         if(digitalRead(ignitionSwitch) == LOW) {        
                 if(starterRelayIsOff) {
-                        scanFingerPrint();
-                        waitForAndCheckPacketResponse(5000);         
+                        //scanFingerPrint();
+                        //waitForAndCheckPacketResponse(5000);
+                         Serial.println(getUserNumber());
+                         Serial.println("Location Log: ");
+                         Serial.println(locationLog);         
                 } else {
                         switchOnStarterRelay(false);
                 }  
         }
         
         gsmCallAndSMSListener();
-        sendNotification();
         locationLog += getLocation();
+        sendNotification();        
 }
 
 void initializePin() {
@@ -116,7 +119,7 @@ void gsmCallAndSMSListener() {
                 readDTMFCommand();        
         }
         
-        if(!gsmResponseMessage.length()) {
+        if(gsmResponseMessage.length()) {
                 Serial.println(gsmResponseMessage);
         }
 }
@@ -194,6 +197,7 @@ void readSMSCommand(String gsmResponseMessage) {
 String parseMessage(String sms) {
         int messageLocation = 0;
         
+        //TODO Refactor and use lastIndexOf
         while(sms.indexOf("\"")>=0) {
                 messageLocation = sms.indexOf("\"");
                 sms = sms.substring(messageLocation + 1);
@@ -202,13 +206,13 @@ String parseMessage(String sms) {
         return sms.substring(2);
 }
 
-/*
+/**
  * Sends SMS message
  *
  * @REQUIRED message
  *
  * When unable to send SMS the GSM device waits at most 16s to respond. 
- **/
+ */
 void sendSMS(String message) {
         Serial.print("Sending SMS \"");
         Serial.print(message);
@@ -233,11 +237,12 @@ String getUserNumber() {
         
         number = waitForAndGetGSMResponse(2000);
         
-        if(number.length()) {
+        if(!number.length()) {
                 number = defaultUserNumber;
         } else {
-                number = number.substring(10,21);        
-                Serial.println(number);                  
+                int indexLocation = number.indexOf(": ");
+                indexLocation = number.indexOf("\"", indexLocation) + 1;
+                number = number.substring(indexLocation , indexLocation + 11);                          
         }
         
         return number;
@@ -250,7 +255,7 @@ String getPassword() {
         
         password = waitForAndGetGSMResponse(2000);
         
-        if(password.length()) {
+        if(!password.length()) {
                 password = defaultUserNumber;
         } else {
                 password = password.substring(10,21);
@@ -459,6 +464,7 @@ String readDirection(int angle) {
               directions += "-";                  
               directions += getTime();
               
+              Serial.println(locationLog);
               return directions;
 }
 
@@ -479,12 +485,12 @@ String getLocation() {
                 location += currentSpeed;
                 
                 String currentDirection = getDirection();
-                if(!currentDirection.length()) {
+                if(currentDirection.length()) {
                         location += currentDirection;
-                
+                        location += "\n";
                 }
                 
-                Serial.println(location);        
+                //Serial.println(location);        
         }
         
         return location;
@@ -512,14 +518,9 @@ void sendLocationLog() {
 void sendNotification() {
         //TODO add also when bike has been picked up or device has been disconnected.
         if(starterRelayIsOff) {
-                String hasChange = getDirection();
-                if(!hasChange.length()) {
-                        sendSMS("ALERT! " + hasChange);
-                }
-                
-                hasChange = getSpeed();
-                if(!hasChange.length()) {
-                        sendSMS("ALERT! " + hasChange);
-                }
+                //if(locationLog.startsWith("R")) {
+                       //Serial.println("--------------------");                  
+                       // sendSMS("ALERT! " + hasChange);
+                //}
         }
 }
