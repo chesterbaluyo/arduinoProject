@@ -28,6 +28,9 @@ int ignitionSwitch = 7;
 int speedMeter = A1;
 int potentiometer = A2;
 
+
+//TODO use AT+CLDTMF=2,"1,2,3,4,5" to test dtmf.
+//TODO use AT+CMGDA="DEL INBOX"
 void setup() {
         gsm.begin(9600);
         fingerPrint.begin(115200);
@@ -178,7 +181,7 @@ void readSMSCommand(String gsmResponseMessage) {
         if(command.startsWith("STOP") && (message.endsWith(password) || message.endsWith(defaultPassword))) {
                 switchOnStarterRelay(false);
                 sendSMS("Engine STOP.");
-                sendLocationLog();          
+                //send stored messages. 
         }
         if(command.startsWith("OVERRIDE") && (message.endsWith(password) || message.endsWith(defaultPassword))) {
                 switchOnStarterRelay(true);
@@ -439,33 +442,32 @@ String getDirection() {
         
         if(shift >= (LAST_SHIFT + STEP)) {
               LAST_SHIFT = shift; 
-              directions = readDirection(shift);  
+              directions = readDirection(shift);
+              directions += "\n";              
         }
        
         if(shift <= (LAST_SHIFT - STEP)) {
               LAST_SHIFT = shift;        
-              directions = readDirection(shift);                            
+              directions = readDirection(shift);
+              directions += "\n";             
         }
         
         return directions;
 }
 
 String readDirection(int angle) {
-              String directions = "";
-              
-              if(angle > 0) {
-                      directions += "L-";                
-                      directions += angle;                
-              } else {
-                      directions += "R";
-                      directions += angle;                
-              }
-              
-              directions += "-";                  
-              directions += getTime();
-              
-              Serial.println(locationLog);
-              return directions;
+        String directions;
+        
+        if(angle > 0) {
+                directions = String(angle);
+                directions += "L";                               
+        } else {
+                directions = String(-angle);
+                directions += "R";                
+        }
+        directions += getTime();
+        
+        return directions;
 }
 
 //TODO test motorSpeed
@@ -479,41 +481,26 @@ String getSpeed() {
 void getLocation() {
         String currentSpeed = getSpeed();
         if(!currentSpeed.length()) { 
-                locationLog += currentSpeed;
-                
-                String currentDirection = getDirection();
-                if(currentDirection.length()) {
-                        locationLog += currentDirection;
-                        locationLog += "\n";
-                }       
-        }
-}
-
-void sendLocationLog() {
-        int SMS_MAX_LENGTH = 150;
-        int index = 0;
-        
-        if(locationLog.length() > SMS_MAX_LENGTH) {
-                while(locationLog.length() > index) {
-                        Serial.println(locationLog.substring(index, index + SMS_MAX_LENGTH));
-                        sendSMS(locationLog.substring(index, index + SMS_MAX_LENGTH)); 
-                        index += (SMS_MAX_LENGTH + 1);         
-                }
-                 
-                sendSMS(locationLog.substring(index));
-        } else {
-                if(locationLog.length()) {
-                        sendSMS(locationLog);
-                }
+                locationLog += getDirection();
         }
 }
 
 void sendNotification() {
         //TODO add also when bike has been picked up or device has been disconnected.
         if(starterRelayIsOff) {
-                //if(locationLog.startsWith("R")) {
-                       //Serial.println("--------------------");                  
-                       // sendSMS("ALERT! " + hasChange);
-                //}
+                String hasChange = getDirection();
+                if(hasChange.length()) {                  
+                        sendSMS("ALERT! " + hasChange);
+                }
+                
+                hasChange = getSpeed();
+                if(hasChange.length()) {                  
+                        sendSMS("ALERT! " + hasChange);
+                }                
+        } else {
+                if(locationLog.length() > 140) {
+                        //Save locationLog to message storage.
+                        locationLog = "";
+                }
         }
 }
