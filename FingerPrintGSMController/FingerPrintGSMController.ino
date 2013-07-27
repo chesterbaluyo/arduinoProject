@@ -64,7 +64,7 @@ void loop() {
         }
         
         gsmCallAndSMSListener();
-        locationLog += getLocation();
+        getLocation();
         sendNotification();        
 }
 
@@ -476,24 +476,17 @@ String getSpeed() {
         return motorSpeed;  
 }
 
-String getLocation() {
-        String location = "";
-        
+void getLocation() {
         String currentSpeed = getSpeed();
-        if(!currentSpeed.length()) {
-          
-                location += currentSpeed;
+        if(!currentSpeed.length()) { 
+                locationLog += currentSpeed;
                 
                 String currentDirection = getDirection();
                 if(currentDirection.length()) {
-                        location += currentDirection;
-                        location += "\n";
-                }
-                
-                //Serial.println(location);        
+                        locationLog += currentDirection;
+                        locationLog += "\n";
+                }       
         }
-        
-        return location;
 }
 
 void sendLocationLog() {
