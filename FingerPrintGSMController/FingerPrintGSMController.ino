@@ -249,7 +249,7 @@ void sendSMS(String message) {
         
         atCommand += userNumber + "\"";
         sendATCommand(atCommand);
-        waitForAndGetGSMResponse(1000);
+        Serial.println(waitForAndGetGSMResponse(2000));
         
         atCommand = message + controlZ;
         sendATCommand(atCommand);
