@@ -239,33 +239,32 @@ String findPBookEntry(String query) {
         String result = "";
         String search = "AT+CPBF=\"";
         
-        search += query;
-        search += "\"";
+        search += query + "\"";
         sendATCommand(search);        
         result = waitForAndGetGSMResponse(2000);
         if(query.equals("user")) {
-                if(!result.length()) {
+                if(result.indexOf(": ") < 0) {
                         result = defaultUserNumber;
                 } else {
                         result = getNumberFromResult(result);                                                   
                 }
-        } else if (query.equals("password")){
-                if(!result.length()) {
+        } else if (query.equals("password")){          
+                if(result.indexOf(": ") < 0) {
                         result = defaultPassword;
                 } else {
                         result = getNumberFromResult(result);                          
                 }        
         }
-        Serial.print(result);
         
         return result;
 }
 
 String getNumberFromResult(String result) {
-        int startQuote, endQuote = result.indexOf(": ");
+        int startQuote = result.indexOf(": ");
+        int endQuote = 0;
         
         startQuote = result.indexOf("\"", startQuote) + 1;
-        endQuote = result.indexOf("\"", startQuote) - 1; 
+        endQuote = result.indexOf("\"", startQuote); 
         
         return result.substring(startQuote , endQuote);        
 }
