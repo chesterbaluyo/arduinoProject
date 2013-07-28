@@ -8,8 +8,8 @@ byte fpShieldResponsePacket[48];
 
 /* GSM Shield */
 SoftwareSerial gsm(2,3);
-String defaultUserNumber = "09996219071";
-String defaultPassword = "123456";
+String userNumber;
+String password;
 String locationLog = "";
 //TODO save config file in SIM
 
@@ -46,6 +46,8 @@ void setup() {
         delay(500);
         deleteAllSMS();
         delay(500);        
+        initializeUserNumberAndPassword("09996219071", "123456"); //Add default user name and password
+        delay(500);
         clearPacket(fpShieldResponsePacket, 48);     
 }
 
@@ -112,6 +114,27 @@ void setLoudnessToMax() {
         Serial.print(waitForAndGetGSMResponse(1000));
 }
 
+void initializeUserNumberAndPassword(String defaultUserNumber, String defaultPassword) {
+        String result = findPBookEntry("user"); 
+        if(result.indexOf(": ") < 0) {
+                userNumber = defaultUserNumber;
+        } else {
+                userNumber = getNumber(result);                                                   
+        }
+        
+        result = findPBookEntry("password");
+        if(result.indexOf(": ") < 0) {
+                password = defaultPassword;
+        } else {
+                password = getNumber(result);                          
+        }        
+        
+        Serial.print("Sending number: ");
+        Serial.println(userNumber);
+        Serial.print("Password: ");
+        Serial.println(password);
+}
+
 void gsmCallAndSMSListener() {  
         String gsmResponseMessage = getGSMResponse();
         
@@ -173,23 +196,21 @@ void deleteAllSMS() {
 void readSMSCommand(String gsmResponseMessage) {
         String command;
         String message;
-        String password;
         
         message = parseMessage(gsmResponseMessage);
         command = message;
         command.toUpperCase();
-        password = findPBookEntry("password");
         
-        if(command.startsWith("STOP") && (message.endsWith(password) || message.endsWith(defaultPassword))) {
+        if(command.startsWith("STOP") && message.endsWith(password)) {
                 switchOnStarterRelay(false);
                 sendSMS("Engine STOP.");
                 //send stored messages. 
         }
-        if(command.startsWith("OVERRIDE") && (message.endsWith(password) || message.endsWith(defaultPassword))) {
+        if(command.startsWith("OVERRIDE") && message.endsWith(password)) {
                 switchOnStarterRelay(true);
                 sendSMS("Override: " + gsmResponseMessage.substring(5));                  
         }
-        if(command.startsWith("RENEW") && (message.endsWith(password) || message.endsWith(defaultPassword))) {
+        if(command.startsWith("RENEW") && message.endsWith(password)) {
                 if(starterRelayIsOff) {
                         deleteAllFingerPrint();                
                         delay(2000);
@@ -226,7 +247,7 @@ void sendSMS(String message) {
         char controlZ = 0x1A;
         String atCommand = "AT+CMGS=\"";
         
-        atCommand += findPBookEntry("user") + "\"";
+        atCommand += userNumber + "\"";
         sendATCommand(atCommand);
         waitForAndGetGSMResponse(1000);
         
@@ -235,38 +256,24 @@ void sendSMS(String message) {
 }
 
 String findPBookEntry(String query) {
-        Serial.println("Search number: ");
         String result = "";
         String search = "AT+CPBF=\"";
         
         search += query + "\"";
         sendATCommand(search);        
         result = waitForAndGetGSMResponse(2000);
-        if(query.equals("user")) {
-                if(result.indexOf(": ") < 0) {
-                        result = defaultUserNumber;
-                } else {
-                        result = getNumberFromResult(result);                                                   
-                }
-        } else if (query.equals("password")){          
-                if(result.indexOf(": ") < 0) {
-                        result = defaultPassword;
-                } else {
-                        result = getNumberFromResult(result);                          
-                }        
-        }
         
         return result;
 }
 
-String getNumberFromResult(String result) {
-        int startQuote = result.indexOf(": ");
+String getNumber(String entry) {
+        int startQuote = entry.indexOf(": ");
         int endQuote = 0;
         
-        startQuote = result.indexOf("\"", startQuote) + 1;
-        endQuote = result.indexOf("\"", startQuote); 
+        startQuote = entry.indexOf("\"", startQuote) + 1;
+        endQuote = entry.indexOf("\"", startQuote); 
         
-        return result.substring(startQuote , endQuote);        
+        return entry.substring(startQuote , endQuote);        
 }
 
 String getTime() {
@@ -424,7 +431,6 @@ char getDTMF() {
 void readDTMFCommand() {
         Serial.print("DTMF: ");
         String dtmfCode = "";
-        String password = findPBookEntry("password");
         
         for(int counter = 0, timeDelay = 100; counter * timeDelay <= 5000; counter++) {
                 dtmfCode += getDTMF();
