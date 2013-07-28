@@ -228,7 +228,6 @@ void sendSMS(String message) {
         
         atCommand = message + controlZ;
         sendATCommand(atCommand);
-        Serial.print(waitForAndGetGSMResponse(15000));                 
 }
 
 String findPBookEntry(String query) {
