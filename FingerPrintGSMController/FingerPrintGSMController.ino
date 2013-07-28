@@ -138,17 +138,17 @@ void initializeUserNumberAndPassword(String defaultUserNumber, String defaultPas
 void gsmCallAndSMSListener() {  
         String gsmResponseMessage = getGSMResponse();
         
-        if(gsmResponseMessage.substring(2,6)=="+CMT"){
-                readSMSCommand(gsmResponseMessage);                        
-                deleteAllSMS();                   
-        }
-        else if (gsmResponseMessage.substring(2,6)=="+CTI") {
-                //TODO check if correct gsm response when incoming call is indicated
-                readDTMFCommand();        
-        }
-        
-        if(gsmResponseMessage.length()) {
+        if(gsmResponseMessage.length() > 0) {        
                 Serial.println(gsmResponseMessage);
+                
+                if(gsmResponseMessage.startsWith("+CMT")){
+                        readSMSCommand(gsmResponseMessage);                        
+                        deleteAllSMS();                   
+                }
+                else if (gsmResponseMessage.startsWith("+CTI")) {
+                        //TODO check if correct gsm response when incoming call is indicated
+                        //readDTMFCommand();        
+                }
         }
 }
 
