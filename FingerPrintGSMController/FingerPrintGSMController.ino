@@ -30,7 +30,6 @@ int potentiometer = A2;
 
 
 //TODO use AT+CLDTMF=2,"1,2,3,4,5" to test dtmf.
-//TODO use AT+CMGDA="DEL INBOX"
 void setup() {
         gsm.begin(9600);
         fingerPrint.begin(115200);
@@ -163,8 +162,8 @@ String getGSMResponse() {
 }
 
 void deleteAllSMS() {
-        Serial.println("Delete All SMS: ");
-        sendATCommand("AT+CMGD=1,4");
+        Serial.println("Delete all Inbox: ");        
+        sendATCommand("AT+CMGDA=\"DEL INBOX\"");
         Serial.print(waitForAndGetGSMResponse(5000));
 }
 
