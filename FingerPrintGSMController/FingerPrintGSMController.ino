@@ -129,9 +129,9 @@ void initializeUserNumberAndPassword(String defaultUserNumber, String defaultPas
                 password = getNumber(result);                          
         }        
         
-        Serial.print("Sending number: ");
+        Serial.println("Sending number: ");
         Serial.println(userNumber);
-        Serial.print("Password: ");
+        Serial.println("Password: ");
         Serial.println(password);
 }
 
@@ -422,25 +422,24 @@ char getDTMF() {
         dtmf.detect(dMags, 506);
         thisChar = dtmf.button(dMags, 1800.);
         if(thisChar) {
-                Serial.print(thisChar);                
+                Serial.println(thisChar);                
         }
         
         return thisChar;      
 }
 
 void readDTMFCommand() {
-        Serial.print("DTMF: ");
+        Serial.println("DTMF: ");
         String dtmfCode = "";
         
-        for(int counter = 0, timeDelay = 100; counter * timeDelay <= 5000; counter++) {
+        for(int timeCount = 1, timeDelay = 100; timeCount * timeDelay <= 5000; timeCount++) {
                 dtmfCode += getDTMF();
                 if(dtmfCode.length() >= password.length()) {
                         break;
-                }
-                
+                }        
                 delay(timeDelay);
         }
-        
+      
         Serial.print("\n\nVerify: ");
         Serial.println(dtmfCode);
         if(dtmfCode.equals(password)) {
