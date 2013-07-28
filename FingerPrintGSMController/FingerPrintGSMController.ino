@@ -453,29 +453,25 @@ String getDirection() {
         int shift = RESISTOR_MAX_ANGLE / 2 - resistorValue / RESISTOR_MAX_VALUE * RESISTOR_MAX_ANGLE;
         
         if(shift >= (LAST_SHIFT + STEP)) {
-              LAST_SHIFT = shift; 
-              directions = readDirection(shift);
-              directions += "\n";              
+              LAST_SHIFT = shift;
+              directions = readDirection(shift) + "\n";
         }
        
         if(shift <= (LAST_SHIFT - STEP)) {
               LAST_SHIFT = shift;        
-              directions = readDirection(shift);
-              directions += "\n";             
+              directions = readDirection(shift) + "\n";
         }
         
         return directions;
 }
 
 String readDirection(int angle) {
-        String directions;
+        String directions = "";
         
         if(angle > 0) {
-                directions = String(angle);
-                directions += "L";                               
+                directions = String(angle) + "L";                  
         } else {
-                directions = String(-angle);
-                directions += "R";                
+                directions = String(-angle) + "R";  
         }
         directions += getTime();
         
