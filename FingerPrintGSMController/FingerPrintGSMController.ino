@@ -12,7 +12,6 @@ String defaultUserNumber = "09996219071";
 String defaultPassword = "123456";
 String locationLog = "";
 //TODO save config file in SIM
-//password should be the PIN.
 
 /* DTMF Decoder */
 float n = 128.0;
@@ -175,7 +174,7 @@ void readSMSCommand(String gsmResponseMessage) {
         message = parseMessage(gsmResponseMessage);
         command = message;
         command.toUpperCase();
-        password = getPassword();
+        password = findPBookEntry("password");
         
         if(command.startsWith("STOP") && (message.endsWith(password) || message.endsWith(defaultPassword))) {
                 switchOnStarterRelay(false);
@@ -223,7 +222,7 @@ void sendSMS(String message) {
         char controlZ = 0x1A;
         String atCommand = "AT+CMGS=\"";
         
-        atCommand += getUserNumber() + "\"";
+        atCommand += findPBookEntry("user") + "\"";
         sendATCommand(atCommand);
         waitForAndGetGSMResponse(1000);
         
@@ -232,39 +231,40 @@ void sendSMS(String message) {
         Serial.print(waitForAndGetGSMResponse(15000));                 
 }
 
-String getUserNumber() {
-        Serial.println("User number: ");
-        String number = "";
-        sendATCommand("AT+CPBF=\"user\"");
+String findPBookEntry(String query) {
+        Serial.println("Search number: ");
+        String result = "";
+        String search = "AT+CPBF=\"";
         
-        number = waitForAndGetGSMResponse(2000);
-        
-        if(!number.length()) {
-                number = defaultUserNumber;
-        } else {
-                int indexLocation = number.indexOf(": ");
-                indexLocation = number.indexOf("\"", indexLocation) + 1;
-                number = number.substring(indexLocation , indexLocation + 11);                          
+        search += query;
+        search += "\"";
+        sendATCommand(search);        
+        result = waitForAndGetGSMResponse(2000);
+        if(query.equals("user")) {
+                if(!result.length()) {
+                        result = defaultUserNumber;
+                } else {
+                        result = getNumberFromResult(result);                                                   
+                }
+        } else if (query.equals("password")){
+                if(!result.length()) {
+                        result = defaultPassword;
+                } else {
+                        result = getNumberFromResult(result);                          
+                }        
         }
+        Serial.print(result);
         
-        return number;
+        return result;
 }
 
-String getPassword() {
-        Serial.println("Password: ");
-        String password = "";
-        sendATCommand("AT+CPBF=\"password\"");
+String getNumberFromResult(String result) {
+        int startQuote, endQuote = result.indexOf(": ");
         
-        password = waitForAndGetGSMResponse(2000);
+        startQuote = result.indexOf("\"", startQuote) + 1;
+        endQuote = result.indexOf("\"", startQuote) - 1; 
         
-        if(!password.length()) {
-                password = defaultUserNumber;
-        } else {
-                password = password.substring(10,21);
-                Serial.println(password);
-        }
-        
-        return password;
+        return result.substring(startQuote , endQuote);        
 }
 
 String getTime() {
