@@ -276,9 +276,9 @@ String getTime() {
         return time;   
 }
 
-void setTime() {
+void resetTime() {
         Serial.println("Reset time: ");
-        sendATCommand("AT+CCLK=\"13/7/28,00:00:00+08\"");
+        sendATCommand("AT+CCLK=\"13/07/28,00:00:00+08\"");
         Serial.print(waitForAndGetGSMResponse(1000));
 }
 
@@ -289,7 +289,7 @@ void switchOnStarterRelay(boolean mode) {
                 starterRelayIsOff = false;
                 digitalWrite(starterRelay, HIGH);  
                 locationLog = ""; 
-                setTime();  
+                resetTime();  
         } else {
                 Serial.println("\n------------------------");          
                 Serial.println("Engine STOP.\n");
