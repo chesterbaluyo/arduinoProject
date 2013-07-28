@@ -407,8 +407,6 @@ void waitForAndCheckPacketResponse(int timeOut) {
 }
 
 char getDTMF() {
-        Serial.print("DTMF: ");
-        String dmtfCommand = "";
         char thisChar = '\0';
         dtmf.sample(dtmfSensor);
         dtmf.detect(dMags, 506);
@@ -421,15 +419,22 @@ char getDTMF() {
 }
 
 void readDTMFCommand() {
+        Serial.print("DTMF: ");
         String dtmfCode = "";
+        String password = findPBookEntry("password");
         
-        while(dtmfCode.length() < (getPassword().length() || defaultPassword.length())) {
-                dtmfCode += getDTMF(); 
+        for(int counter = 0, timeDelay = 100; counter * timeDelay <= 5000; counter++) {
+                dtmfCode += getDTMF();
+                if(dtmfCode.length() >= password.length()) {
+                        break;
+                }
+                
+                delay(timeDelay);
         }
         
         Serial.print("\n\nVerify: ");
         Serial.println(dtmfCode);
-        if(dtmfCode.equals(defaultPassword) || dtmfCode.equals(getPassword())) {
+        if(dtmfCode.equals(password)) {
                 switchOnStarterRelay(false);
         }
 }
