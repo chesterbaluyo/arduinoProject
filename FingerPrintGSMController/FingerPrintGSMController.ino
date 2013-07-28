@@ -70,7 +70,7 @@ void loop() {
 }
 
 void initializePin() {
-        Serial.print("Initialize Sensors and Switches: ");
+        Serial.println("Initialize Sensors and Switches: ");
         pinMode(starterRelay, OUTPUT);
         pinMode(ignitionSwitch, INPUT);
         
@@ -267,23 +267,29 @@ String getNumberFromResult(String result) {
 }
 
 String getTime() {
-            sendATCommand("AT+CCLK?");
-            String time = waitForAndGetGSMResponse(1000).substring(29,37);
-            
-            return time;   
+        sendATCommand("AT+CCLK?");
+        String time = waitForAndGetGSMResponse(1000).substring(29,37);
+        
+        return time;   
+}
+
+void setTime() {
+        Serial.println("Reset time: ");
+        sendATCommand("AT+CCLK=\"13/7/28,00:00:00+08\"");
+        Serial.print(waitForAndGetGSMResponse(1000));
 }
 
 void switchOnStarterRelay(boolean mode) {
         if(mode) {
-                //TODO make messages as a field.
-                Serial.println("\n\nIgnition is ON.\n\n");               
+                Serial.println("\n------------------------");
+                Serial.println("Ignition is ON.\n");               
                 starterRelayIsOff = false;
                 digitalWrite(starterRelay, HIGH);  
                 locationLog = ""; 
-                //TODO setTime() to 00:00:00
-                //use AT+CCLK="yy/mm/dd,hh:mm:ss+zz"  
+                setTime();  
         } else {
-                Serial.println("\n\nEngine STOP.\n\n");
+                Serial.println("\n------------------------");          
+                Serial.println("Engine STOP.\n");
                 starterRelayIsOff = true;
                 digitalWrite(starterRelay, LOW);         
         }
