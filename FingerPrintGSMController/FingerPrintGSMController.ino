@@ -27,8 +27,6 @@ int ignitionSwitch = 7;
 int speedMeter = A1;
 int potentiometer = A2;
 
-
-//TODO use AT+CLDTMF=2,"1,2,3,4,5" to test dtmf.
 void setup() {
         gsm.begin(9600);
         fingerPrint.begin(115200);
@@ -56,9 +54,7 @@ void loop() {
                 if(starterRelayIsOff) {
                         //scanFingerPrint();
                         //waitForAndCheckPacketResponse(5000);
-                         Serial.println(getUserNumber());
-                         Serial.println("Location Log: ");
-                         Serial.println(locationLog);         
+                        localDTMF();
                 } else {
                         switchOnStarterRelay(false);
                 }  
@@ -67,6 +63,14 @@ void loop() {
         gsmCallAndSMSListener();
         getLocation();
         sendNotification();        
+}
+
+//TODO use AT+CLDTMF=2,"1,2,3,4,5" to test dtmf.
+void localDTMF() {
+        Serial.println("Local DTMF: ");
+        sendATCommand("AT+CLDTMF=2,\"1,2,3,4,5,6\"");
+        Serial.print(waitForAndGetGSMResponse(1000));
+        readDTMFCommand();        
 }
 
 void initializePin() {
