@@ -44,6 +44,8 @@ void setup() {
         delay(500);
         setLoudnessToMax();
         delay(500);
+        setLoudSpeakerVolumeLevel();
+        delay(500);
         deleteAllSMS();
         delay(500);        
         initializeUserNumberAndPassword("09996219071", "123456"); //Add default user name and password
@@ -72,7 +74,7 @@ void localDTMF() {
         Serial.println("Local DTMF: ");
         sendATCommand("AT+CLDTMF=2,\"1,2,3,4,5,6\"");
         Serial.print(waitForAndGetGSMResponse(1000));
-        readDTMFCommand();        
+        //readDTMFCommand();        
 }
 
 void initializePin() {
@@ -111,6 +113,12 @@ void enableLoudSpeaker() {
 void setLoudnessToMax() {
         Serial.println("Set maximum loudness: ");   
         sendATCommand("ATL9");
+        Serial.print(waitForAndGetGSMResponse(1000));
+}
+
+void setLoudSpeakerVolumeLevel() {
+        Serial.println("Loudspeaker volume level: ");   
+        sendATCommand("AT+CLVL=100");
         Serial.print(waitForAndGetGSMResponse(1000));
 }
 
