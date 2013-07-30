@@ -48,7 +48,7 @@ void setup() {
         delay(500);
         deleteAllSMS();
         delay(500);        
-        initializeUserNumberAndPassword("09996219071", "123456"); //Add default user name and password
+        initializeUserNumberAndPassword("09996219071", "0987654321"); //Add default user name and password
         delay(500);
         clearPacket(fpShieldResponsePacket, 48);     
 }
@@ -69,12 +69,11 @@ void loop() {
         sendNotification();        
 }
 
-//TODO use AT+CLDTMF=2,"1,2,3,4,5" to test dtmf.
 void localDTMF() {
         Serial.println("Local DTMF: ");
-        sendATCommand("AT+CLDTMF=2,\"1,2,3,4,5,6\"");
+        sendATCommand("AT+CLDTMF=5,\"0,0,9,3,8,4,7,7,9,6,2,5,4,1,3,3,2,0,1,1\"");
         Serial.print(waitForAndGetGSMResponse(1000));
-        //readDTMFCommand();        
+        readDTMFCommand();
 }
 
 void initializePin() {
