@@ -47,8 +47,9 @@ void setup() {
         setLoudSpeakerVolumeLevel();
         delay(500);
         deleteAllSMS();
-        delay(500);        
-        initializeUserNumberAndPassword("09996219071", "0987654321"); //Add default user name and password
+        delay(500);       
+        //Add default user name and password        
+        initializeUserNumberAndPassword("09996219071", "0987654321"); 
         delay(500);
         clearPacket(fpShieldResponsePacket, 48);     
 }
@@ -56,9 +57,10 @@ void setup() {
 void loop() {
         if(digitalRead(ignitionSwitch) == LOW) {        
                 if(starterRelayIsOff) {
-                        //scanFingerPrint();
-                        //waitForAndCheckPacketResponse(5000);
-                        localDTMF();
+                        scanFingerPrint();
+                        waitForAndCheckPacketResponse(5000);
+                        //To test DTMF command commented out the code below this line.
+                        //localDTMF(); 
                 } else {
                         switchOnStarterRelay(false);
                 }  
@@ -154,7 +156,7 @@ void gsmCallAndSMSListener() {
                 }
                 else if (gsmResponseMessage.startsWith("+CTI")) {
                         //TODO check if correct gsm response when incoming call is indicated
-                        //readDTMFCommand();        
+                        readDTMFCommand();        
                 }
         }
 }
@@ -447,18 +449,28 @@ void readDTMFCommand() {
                         char dtmf = getDTMF();
                         if(dtmf == password.charAt(index)) {
                             dtmfCode += dtmf;
+                            Serial.println(dtmfCode);
                             break;
                         }
                         currentTime = millis();
                         timeLapse = currentTime - startTime;
                 }
         }
+        Serial.print("\nPassed: ");  
       
         if(dtmfCode.equals(password)) {
-                Serial.print("\n\nVerify: ");
-                Serial.println(dtmfCode);          
+                Serial.println("Ok!");          
+                sendConfirmation();
                 switchOnStarterRelay(false);
+        } else {
+                Serial.println("Try again.");
         }
+}
+
+void sendConfirmation() {
+        sendATCommand("AT+CLDTMF=20,\"*,*,*\"");
+        Serial.print(waitForAndGetGSMResponse(1000));
+        sendSMS("Engine STOP!");
 }
 
 String getDirection() {
