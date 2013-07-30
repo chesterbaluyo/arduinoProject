@@ -14,7 +14,7 @@ String locationLog = "";
 //TODO save config file in SIM
 
 /* DTMF Decoder */
-float n = 128.0;
+float n = 152.0;
 float samplingRate = 8926.0;
 DTMF dtmf = DTMF(n, samplingRate);
 float dMags[8];
@@ -430,7 +430,7 @@ char getDTMF() {
         dtmf.detect(dMags, 506);
         thisChar = dtmf.button(dMags, 1800.);
         if(thisChar) {
-                Serial.println(thisChar);                
+                Serial.print(thisChar);                
         }
         
         return thisChar;      
@@ -440,17 +440,24 @@ void readDTMFCommand() {
         Serial.println("DTMF: ");
         String dtmfCode = "";
         
-        for(int timeCount = 1, timeDelay = 100; timeCount * timeDelay <= 5000; timeCount++) {
-                dtmfCode += getDTMF();
-                if(dtmfCode.length() >= password.length()) {
-                        break;
-                }        
-                delay(timeDelay);
+        for(int index = 0; password.length() > index; index++) {
+                unsigned long startTime = millis(), currentTime = 0;
+                int timeLapse = 0, TIME = 3000;
+                 
+                while(TIME >= timeLapse) {
+                        char dtmf = getDTMF();
+                        if(dtmf == password.charAt(index)) {
+                            dtmfCode += dtmf;
+                            break;
+                        }
+                        currentTime = millis();
+                        timeLapse = currentTime - startTime;
+                }
         }
       
-        Serial.print("\n\nVerify: ");
-        Serial.println(dtmfCode);
         if(dtmfCode.equals(password)) {
+                Serial.print("\n\nVerify: ");
+                Serial.println(dtmfCode);          
                 switchOnStarterRelay(false);
         }
 }
