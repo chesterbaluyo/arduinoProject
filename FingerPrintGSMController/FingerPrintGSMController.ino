@@ -11,7 +11,6 @@ SoftwareSerial gsm(2,3);
 String userNumber;
 String password;
 String locationLog = "";
-//TODO save config file in SIM
 
 /* DTMF Decoder */
 float n = 152.0;
@@ -59,7 +58,7 @@ void loop() {
                 if(starterRelayIsOff) {
                         scanFingerPrint();
                         waitForAndCheckPacketResponse(5000);
-                        //To test DTMF command commented out the code below this line.
+                        //To test DTMF command commented out the code below.
                         //localDTMF(); 
                 } else {
                         switchOnStarterRelay(false);
@@ -72,6 +71,7 @@ void loop() {
 }
 
 void localDTMF() {
+        //AT+VTS=
         Serial.println("Local DTMF: ");
         sendATCommand("AT+CLDTMF=5,\"0,0,9,3,8,4,7,7,9,6,2,5,4,1,3,3,2,0,1,1\"");
         Serial.print(waitForAndGetGSMResponse(1000));
@@ -155,6 +155,7 @@ void gsmCallAndSMSListener() {
                         deleteAllSMS();                   
                 }
                 else if (gsmResponseMessage.startsWith("+CTI")) {
+                        //+CRING
                         //TODO check if correct gsm response when incoming call is indicated
                         readDTMFCommand();        
                 }
@@ -213,7 +214,8 @@ void readSMSCommand(String gsmResponseMessage) {
         if(command.startsWith("STOP") && message.endsWith(password)) {
                 switchOnStarterRelay(false);
                 sendSMS("Engine STOP.");
-                //send stored messages. 
+                //TODO send stored messages.
+                //use AT+CMSS=index. Delete all messages after sending. 
         }
         if(command.startsWith("OVERRIDE") && message.endsWith(password)) {
                 switchOnStarterRelay(true);
@@ -455,11 +457,10 @@ void readDTMFCommand() {
                         currentTime = millis();
                         timeLapse = currentTime - startTime;
                 }
-        }
-        Serial.print("\nPassed: ");  
+        } 
       
         if(dtmfCode.equals(password)) {
-                Serial.println("Ok!");          
+                Serial.println("DTMF PASSED!");          
                 sendConfirmation();
                 switchOnStarterRelay(false);
         } else {
@@ -469,27 +470,25 @@ void readDTMFCommand() {
 
 void sendConfirmation() {
         sendATCommand("AT+CLDTMF=20,\"*,*,*\"");
-        Serial.print(waitForAndGetGSMResponse(1000));
+        waitForAndGetGSMResponse(1000);
         sendSMS("Engine STOP!");
 }
 
 String getDirection() {
-        static int LAST_SHIFT = 0;  
-        int RESISTOR_MAX_ANGLE = 270;
-        int RESISTOR_MAX_VALUE = 1050;
-        int STEP = 10;
+        const int RESISTOR_MAX_ANGLE = 270;
+        const int RESISTOR_MAX_VALUE = 1050;
+        const int STEP = 10;
         float resistorValue = analogRead(potentiometer);
         String directions = "";
-        
+        static int lastShift = 0;  
         int shift = RESISTOR_MAX_ANGLE / 2 - resistorValue / RESISTOR_MAX_VALUE * RESISTOR_MAX_ANGLE;
         
-        if(shift >= (LAST_SHIFT + STEP)) {
-              LAST_SHIFT = shift;
+        if(shift >= (lastShift + STEP)) {
+              lastShift = shift;
               directions = readDirection(shift) + "\n";
-        }
-       
-        if(shift <= (LAST_SHIFT - STEP)) {
-              LAST_SHIFT = shift;        
+        }       
+        else if(shift <= (lastShift - STEP)) {
+              lastShift = shift;        
               directions = readDirection(shift) + "\n";
         }
         
@@ -509,17 +508,42 @@ String readDirection(int angle) {
         return directions;
 }
 
-//TODO test motorSpeed
-String getSpeed() {
-        float speedValue = analogRead(speedMeter);
-        String motorSpeed = "";
-      
-        return motorSpeed;  
+int getDistance() {
+        const int OFFSET = 5;
+        static unsigned long startTime = millis();
+        unsigned long time = 0;
+        static int initialSpeed = 0;          
+        float currentSpeed = analogRead(speedMeter);
+        int distance = 0;
+        
+        if(currentSpeed >= (initialSpeed + OFFSET)) {
+              time = millis();
+              time -= startTime;          
+              //TODO convertion
+              distance += initialSpeed * time;
+              
+              initialSpeed = currentSpeed;
+              startTime = time;
+        }
+        else if(currentSpeed <= (initialSpeed - OFFSET)) {
+              time = millis();
+              time -= startTime;          
+              //TODO convertion
+              distance += initialSpeed * time;
+              
+              initialSpeed = currentSpeed;
+              startTime = time;              
+        }
+              
+        return distance;      
 }
 
+int totalDistance = 0;
 void getLocation() {
-        String currentSpeed = getSpeed();
-        if(!currentSpeed.length()) { 
+        int distance = getDistance();
+        if(distance) {
+                totalDistance += distance;
+                locationLog += totalDistance; 
                 locationLog += getDirection();
         }
 }
@@ -532,13 +556,14 @@ void sendNotification() {
                         sendSMS("ALERT! " + hasChange);
                 }
                 
-                hasChange = getSpeed();
-                if(hasChange.length()) {                  
-                        sendSMS("ALERT! " + hasChange);
+                int distanceChange = getDistance();
+                if(distanceChange) {                  
+                        sendSMS("ALERT! " + distanceChange);
                 }                
         } else {
                 if(locationLog.length() > 140) {
                         //Save locationLog to message storage.
+                        //use AT+CMGW=index and check if message is stored when sending fails.
                         locationLog = "";
                 }
         }
