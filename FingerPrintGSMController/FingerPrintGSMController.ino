@@ -150,11 +150,11 @@ void gsmCallAndSMSListener() {
         if(gsmResponseMessage.length() > 0) {        
                 Serial.println(gsmResponseMessage);
                 
-                if(gsmResponseMessage.startsWith("+CMT")){
+                if(gsmResponseMessage.startsWith("+CMT",2)){
                         readSMSCommand(gsmResponseMessage);                        
                         deleteAllSMS();                   
                 }
-                else if (gsmResponseMessage.startsWith("+CTI")) {
+                else if (gsmResponseMessage.startsWith("+CTI",2) || gsmResponseMessage.startsWith("+CRING",2)) {
                         //+CRING
                         //TODO check if correct gsm response when incoming call is indicated
                         readDTMFCommand();        
@@ -211,17 +211,17 @@ void readSMSCommand(String gsmResponseMessage) {
         command = message;
         command.toUpperCase();
         
-        if(command.startsWith("STOP") && message.endsWith(password)) {
+        if(command.startsWith("STOP") && message.endsWith(password + "\r\n")) {
                 switchOnStarterRelay(false);
                 sendSMS("Engine STOP.");
                 //TODO send stored messages.
                 //use AT+CMSS=index. Delete all messages after sending. 
         }
-        if(command.startsWith("OVERRIDE") && message.endsWith(password)) {
+        if(command.startsWith("OVERRIDE") && message.endsWith(password + "\r\n")) {
                 switchOnStarterRelay(true);
                 sendSMS("Override: " + gsmResponseMessage.substring(5));                  
         }
-        if(command.startsWith("RENEW") && message.endsWith(password)) {
+        if(command.startsWith("RENEW") && message.endsWith(password + "\r\n")) {
                 if(starterRelayIsOff) {
                         deleteAllFingerPrint();                
                         delay(2000);
