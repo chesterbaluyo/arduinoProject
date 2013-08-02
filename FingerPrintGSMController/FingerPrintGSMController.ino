@@ -154,7 +154,6 @@ void gsmCallAndSMSListener() {
                         deleteAllSMS();                   
                 }
                 else if (gsmResponseMessage.startsWith("+CTI",2) || gsmResponseMessage.startsWith("+CRING",2)) {
-                        //+CRING
                         //TODO check if correct gsm response when incoming call is indicated
                         readDTMFCommand();        
                 }
@@ -543,7 +542,7 @@ void getLocation() {
         int distance = 0 //getDistance();
         if(!distance) {
                 totalDistance += distance;
-                locationLog += totalDistance; 
+                locationLog += totalDistance + "-"; 
                 locationLog += getDirection();
         }
 }
@@ -562,9 +561,32 @@ void sendNotification() {
                 }                
         } else {
                 if(locationLog.length() > 140) {
-                        //Save locationLog to message storage.
-                        //use AT+CMGW=index and check if message is stored when sending fails.
+                        storeMessageInSim(locationLog);
                         locationLog = "";
                 }
         }
+}
+
+int storeMessageInSim(String message) {
+        static int messageCount = 0;
+        //Change this to the max amount the sim can store. 
+        //64K sim has 25 (inbox 1 & 2) while 128 sim has 25 (inbox 1,2 & 3) 
+        const int MAX_STORAGE = 20;   
+  
+        if(index <= MAX_STORAGE) {
+                String response;
+                
+                sendSMS(message, false);
+                response = waitForAndGetGSMResponse(2000);
+                Serial.println(response);
+                
+                if(response.indexOf("+CMGW: ") > 0) {
+                      messageCount ++;
+                }
+        } else {
+                //TODO send all message before delete.
+                Serial.println("Message Full!");
+        }
+        
+        return messageCount;
 }
