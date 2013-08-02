@@ -213,13 +213,13 @@ void readSMSCommand(String gsmResponseMessage) {
         
         if(command.startsWith("STOP") && message.endsWith(password + "\r\n")) {
                 switchOnStarterRelay(false);
-                sendSMS("Engine STOP.");
+                sendSMS("Engine STOP.", true);
                 //TODO send stored messages.
                 //use AT+CMSS=index. Delete all messages after sending. 
         }
         if(command.startsWith("OVERRIDE") && message.endsWith(password + "\r\n")) {
                 switchOnStarterRelay(true);
-                sendSMS("Override: " + gsmResponseMessage.substring(5));                  
+                sendSMS("Override: " + gsmResponseMessage.substring(5), true);                  
         }
         if(command.startsWith("RENEW") && message.endsWith(password + "\r\n")) {
                 if(starterRelayIsOff) {
@@ -242,16 +242,22 @@ String parseMessage(String sms) {
  * Sends SMS message
  *
  * @REQUIRED message
- *
+ * mode
+ * Set mode to true then it will be sent to the user else it will be saved to sim memory.
  * When unable to send SMS the GSM device waits at most 16s to respond. 
  */
-void sendSMS(String message) {
+void sendSMS(String message, boolean mode) {
         Serial.print("Sending SMS \"");
         Serial.print(message);
         Serial.println("\": ");
+        String atCommand = "";
         
         char controlZ = 0x1A;
-        String atCommand = "AT+CMGS=\"";
+        if(mode) {
+                atCommand = "AT+CMGS=\"";        
+        } else {
+                atCommand = "AT+CMGW=\"";                  
+        }
         
         atCommand += userNumber + "\"";
         sendATCommand(atCommand);
@@ -466,7 +472,7 @@ void readDTMFCommand() {
 void sendConfirmation() {
         sendATCommand("AT+CLDTMF=20,\"*,*,*\"");
         waitForAndGetGSMResponse(1000);
-        sendSMS("Engine STOP!");
+        sendSMS("Engine STOP!", true);
 }
 
 String getDirection() {
@@ -548,12 +554,12 @@ void sendNotification() {
         if(starterRelayIsOff) {
                 String hasChange = getDirection();
                 if(hasChange.length()) {                  
-                        sendSMS("ALERT! " + hasChange);
+                        sendSMS("ALERT! " + hasChange, true);
                 }
                 
                 int distanceChange = getDistance();
                 if(distanceChange) {                  
-                        sendSMS("ALERT! " + distanceChange);
+                        sendSMS("ALERT! " + distanceChange, true);
                 }                
         } else {
                 if(locationLog.length() > 140) {
