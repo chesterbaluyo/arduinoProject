@@ -233,14 +233,9 @@ void readSMSCommand(String gsmResponseMessage) {
 
 String parseMessage(String sms) {
         int messageLocation = 0;
-        
-        //TODO Refactor and use lastIndexOf
-        while(sms.indexOf("\"")>=0) {
-                messageLocation = sms.indexOf("\"");
-                sms = sms.substring(messageLocation + 1);
-        }
-        
-        return sms.substring(2);
+        messageLocation = sms.lastIndexOf("\"") + 3;
+
+        return sms.substring(messageLocation);
 }
 
 /**
