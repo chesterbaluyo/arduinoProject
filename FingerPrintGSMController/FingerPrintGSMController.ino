@@ -71,7 +71,6 @@ void loop() {
 }
 
 void localDTMF() {
-        //AT+VTS=
         Serial.println("Local DTMF: ");
         sendATCommand("AT+CLDTMF=5,\"0,0,9,3,8,4,7,7,9,6,2,5,4,1,3,3,2,0,1,1\"");
         Serial.print(waitForAndGetGSMResponse(1000));
@@ -541,8 +540,8 @@ int getDistance() {
 
 int totalDistance = 0;
 void getLocation() {
-        int distance = getDistance();
-        if(distance) {
+        int distance = 0 //getDistance();
+        if(!distance) {
                 totalDistance += distance;
                 locationLog += totalDistance; 
                 locationLog += getDirection();
@@ -557,7 +556,7 @@ void sendNotification() {
                         sendSMS("ALERT! " + hasChange, true);
                 }
                 
-                int distanceChange = getDistance();
+                int distanceChange = 0 //getDistance();
                 if(distanceChange) {                  
                         sendSMS("ALERT! " + distanceChange, true);
                 }                
